@@ -1,0 +1,23 @@
+{
+  "name": "ipgrv",
+  "version": "0.0.1",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "webpack -d --watch",
+    "build": "webpack -p",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "0BSD",
+  "dependencies": {
+    "@hyperapp/router": "git://github.com/hyperapp/router.git#newrouter",
+    "hyperapp": "^0.16.2"
+  },
+  "devDependencies": {
+    "babel-core": "^6.26.0",
+    "babel-loader": "^7.1.2",
+    "babel-preset-env": "^1.6.1",
+    "webpack": "^3.9.1"
+  }
+}

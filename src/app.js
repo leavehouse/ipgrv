@@ -3,7 +3,7 @@ import { location, Route, Link } from "@hyperapp/router"
 import { getDirectory } from "./store"
 
 const mainView = state => actions =>
-  h('main', {}, [
+  h('main', {class: 'container grid-lg'}, [
     Route({ path: '/', render: Home }),
     Route({ path: '/tree/:cid', render: Filetree, parent: true}),
   ]);
@@ -21,18 +21,52 @@ const Filetree = ({ location, match }) => {
   const treePathArray = pathToArray(treePath);
   return (
     h('div', {}, [
-      TreeBreadcrumb({ pathArray: treePathArray }),
+      h('h1', {}, 'Commit object CID: '+match.params.cid),
+      TreeBreadcrumb({ matchUrl: match.url, pathArray: treePathArray }),
       TreeTable({ locationPathname: location.pathname, pathArray: treePathArray }),
     ])
   );
 }
 
-const TreeBreadcrumb = ({ pathArray }) =>
-  h('nav', { 'aria-label': 'breadcrumb', role: 'navigation'},
-    h('ol', {},
-      pathArray
-        .map(segment => ({ segment: segment, prefix: null }))
-        .map(pathSeg => h('li', {}, pathSeg.segment))));
+function makeBreadcrumbsLinkData(pathArray) {
+  let pathSegData = [];
+  let parentPath = '';
+  if (pathArray.length > 0) {
+    pathSegData.push({ segment: '/' })
+  }
+  for (var i = 0; i < pathArray.length; i++) {
+    const pathSeg = pathArray[i];
+    pathSegData.push({ segment: pathSeg, pathToParent: parentPath });
+    parentPath = parentPath+'/'+pathSeg;
+  }
+  return pathSegData;
+}
+
+const TreeBreadcrumb = ({ matchUrl, pathArray }) => {
+  const pathSegData = makeBreadcrumbsLinkData(pathArray);
+  // `matchUrl` = /tree/:cid, and each path segment's `pathToParent` field  = /some/path/here,
+  //  where `pathToParent` = <empty string> for the first path segment
+  return (
+    h('nav', { 'aria-label': 'breadcrumb', role: 'navigation'},
+      h('ol', { 'class': 'breadcrumb' },
+        pathSegData
+          .map((pathSeg, i) =>
+            breadcrumbSegment({ pathSeg, matchUrl, isLast: i === pathSegData.length - 1}))))
+  );
+};
+
+const breadcrumbSegment = ({pathSeg, matchUrl, isLast }) => {
+  return (
+    h('li', {'class': 'breadcrumb-item'},
+      (isLast
+       ? pathSeg.segment
+       : (pathSeg.segment === '/'
+         ? Link({ to: matchUrl },
+                h('i', {class: 'link fa fa-home', 'aria-label': 'Home'}))
+         : Link({ to: `${matchUrl}${pathSeg.pathToParent}/${pathSeg.segment}` },
+                pathSeg.segment))))
+  );
+};
 
 const TreeTable = ({ locationPathname, pathArray }) => {
   const entries = getDirectory({ path: pathArray });

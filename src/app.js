@@ -4,8 +4,8 @@ import { getDirectory } from "./store"
 
 const mainView = state => actions =>
   h('main', {}, [
-    Route({ path: '/', view: Home }),
-    Route({ path: '/tree/:cid', parent: true, view: Filetree }),
+    Route({ path: '/', render: Home }),
+    Route({ path: '/tree/:cid', render: Filetree, parent: true}),
   ]);
 
 const demoCommitHash = "z8mWaFhg8TJBrcjq3FtHq92Y6TsqzhNs7";
@@ -17,11 +17,13 @@ const Filetree = ({ location, match }) => {
   const treePath = (location.pathname.length === match.url.length
                     ? '/'
                     : location.pathname.substring(match.url.length));
+
   const treePathArray = pathToArray(treePath);
   return (
-    h('div', {},
+    h('div', {}, [
       TreeBreadcrumb({ pathArray: treePathArray }),
-      TreeTable({ locationPathname: location.pathname, pathArray: treePathArray }))
+      TreeTable({ locationPathname: location.pathname, pathArray: treePathArray }),
+    ])
   );
 }
 
@@ -29,21 +31,21 @@ const TreeBreadcrumb = ({ pathArray }) =>
   h('nav', { 'aria-label': 'breadcrumb', role: 'navigation'},
     h('ol', {},
       pathArray
-        .map(segment => ({ segment: segment, prefix: TODO }))
-        .map(pathSeg => h('li', {}, pathSeg))));
+        .map(segment => ({ segment: segment, prefix: null }))
+        .map(pathSeg => h('li', {}, pathSeg.segment))));
 
 const TreeTable = ({ locationPathname, pathArray }) => {
   const entries = getDirectory({ path: pathArray });
+  const listItems = entries && entries.map(entry =>
+    h('tr', {},
+      h('td', {},
+        (entry.isDir
+         ? Link({ to: `${locationPathname}/${entry.name}` }, entry.name)
+         : entry.name))));
 
   return (
     h('table', {},
-      h('tbody', {},
-        entries && entries.map(entry =>
-          h('tr', {},
-          h('td', {},
-            (entry.isDir
-             ? Link({ to: `${locationPathname}/${entry.name}` }, entry.name)
-             : entry.name))))))
+      h('tbody', {}, listItems))
   );
 }
 

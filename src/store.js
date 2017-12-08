@@ -11,25 +11,33 @@
  *  - getBlob: getDirectory but for navi
  */
 
-const fileTreeDirStruct = {
-  'package.json': null,
-  '.babelrc': null,
-  'webpack.config.js': null,
-  'dist': { children: {
-    'index.html': null,
-    'styles.css': null,
-  }},
-  'src': { children: {
-    'views': { children: {
-      'index.js': null,
-      'tree.js': null,
-      'commit.js': null,
-      'foo': { children: {
-        'bar': { children: {} }
-      }},
+function getDirStructure(cid) {
+  // TODO: actually make requests to IPFS
+  return {
+    'package.json': null,
+    '.babelrc': null,
+    'webpack.config.js': null,
+    'dist': { children: {
+      'index.html': null,
+      'styles.css': null,
     }},
-    'index.js': null,
-  }},
+    'src': { children: {
+      'views': { children: {
+        'index.js': null,
+        'tree.js': null,
+        'commit.js': null,
+        'foo': { children: {
+          'bar': { children: {} }
+        }},
+      }},
+      'index.js': null,
+    }},
+  };
+}
+
+const cache = {
+  cid: null,
+  dirStructure: null
 };
 
 const navToSubtree = (tree, pathArray) => {
@@ -45,7 +53,7 @@ function isObject(x) {
 };
 
 // `path` is an array of path segments
-export const getDirectory = ({ /*cid,*/ path }) => {
+export const getDirectory = ({ cid, path }) => {
   /* For now only do tree views (blobs wont have clickable links):
    *
    * if `cid` is not the one currently stored
@@ -53,8 +61,11 @@ export const getDirectory = ({ /*cid,*/ path }) => {
    *
    * navigate to the appropriate subtree, return children of subtree root
    */
-
-  // For now, `cid` is ignored and we use mockup data.
-  const subtree = navToSubtree(fileTreeDirStruct, path);
-  return Object.keys(subtree).map(name => ({ name: name, isDir: isObject(subtree[name]) }));
+  if (cid !== cache.cid) {
+    cache.dirStructure = getDirStructure(cid);
+    cache.cid = cid;
+  }
+  const subtree = navToSubtree(cache.dirStructure, path);
+  return Object.keys(subtree).map(name => ({ name: name,
+                                             isDir: isObject(subtree[name]) }));
 }

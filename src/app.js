@@ -23,7 +23,8 @@ const Filetree = ({ location, match }) => {
     h('div', {}, [
       h('h1', {}, 'Commit object CID: '+match.params.cid),
       TreeBreadcrumb({ matchUrl: match.url, pathArray: treePathArray }),
-      TreeTable({ locationPathname: location.pathname, pathArray: treePathArray }),
+      TreeTable({ locationPathname: location.pathname, pathArray: treePathArray,
+                  cid: match.params.cid }),
     ])
   );
 }
@@ -68,8 +69,8 @@ const breadcrumbSegment = ({pathSeg, matchUrl, isLast }) => {
   );
 };
 
-const TreeTable = ({ locationPathname, pathArray }) => {
-  const entries = getDirectory({ path: pathArray });
+const TreeTable = ({ locationPathname, pathArray, cid }) => {
+  const entries = getDirectory({ cid: cid, path: pathArray });
   const listItems = entries && entries.map(entry =>
     h('tr', {},
       h('td', {},
@@ -78,7 +79,7 @@ const TreeTable = ({ locationPathname, pathArray }) => {
          : entry.name))));
 
   return (
-    h('table', {},
+    h('table', {class: 'table table-striped'},
       h('tbody', {}, listItems))
   );
 }

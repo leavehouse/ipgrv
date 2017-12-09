@@ -1,52 +1,75 @@
 import { h } from "hyperapp"
 import { Route, Link } from "@hyperapp/router"
-import { getDirectory } from "./store"
+import { treePathEquals } from "./utils"
 
-const demoCommitHash = "z8mWaFkTJhSoyd4vfxprPSi8gwTgeEePb";
+const ipgrvCommitHash = "z8mWaFkTJhSoyd4vfxprPSi8gwTgeEePb";
+const hyperappCommitHash = "z8mWaGke4NCrkPUptjA2reLUkL1K8UT8z";
 
 export const mainView = state => actions =>
   h('main', {class: 'container grid-lg'}, [
     Route({ path: '/', render: Home }),
-    Route({ path: '/tree/:cid', render: Filetree, parent: true}),
+    Route({
+      path: '/tree/:cid',
+      render: Filetree({getTreePath: actions.tree.getPath, treeState: state.tree }),
+      parent: true
+    }),
   ]);
 
 const Home = () =>
-  Link({ to: `/tree/${demoCommitHash}` }, 'Demo repo');
+  h('ul', {}, [
+    h('li', {}, Link({ to: `/tree/${ipgrvCommitHash}` }, 'ipgrv repo')),
+    h('li', {}, Link({ to: `/tree/${hyperappCommitHash}` }, 'hyperapp repo')),
+  ]);
 
-const Filetree = ({ location, match }) => {
+// Filetree is a route view, so props have to be passed in before.
+const Filetree = ({getTreePath, treeState}) => ({ location, match }) => {
   const treePath = (location.pathname.length === match.url.length
                     ? '/'
                     : location.pathname.substring(match.url.length));
 
   const treePathArray = pathToArray(treePath);
+
+  let treeEntries = treeState.entries;
+  let treeIsLoading = treeState.isLoading;
+  if (match.params.cid !== treeState.commitCid
+      || !treePathEquals(treePathArray, treeState.path)) {
+    treeIsLoading = true;
+    treeEntries = [];
+  }
   return (
-    h('div', {}, [
+    h('div', {oncreate() { getTreePath({ cid: match.params.cid, path: treePathArray }) },
+              onupdate() { getTreePath({ cid: match.params.cid, path: treePathArray }) }}, [
       h('h1', {}, 'Commit object CID: '+match.params.cid),
       TreeBreadcrumb({ matchUrl: match.url, pathArray: treePathArray }),
       TreeTable({ locationPathname: location.pathname, pathArray: treePathArray,
-                  cid: match.params.cid }),
+                  cid: match.params.cid, treeEntries, treeIsLoading }),
     ])
   );
 }
 
 function makeBreadcrumbsLinkData(pathArray) {
-  let pathSegData = [];
+  let segments = [];
   let parentPath = '';
   if (pathArray.length > 0) {
-    pathSegData.push({ segment: '/' })
+    segments.push({ segment: '/' })
   }
+  //   segments[0].pathToParent = ''
+  //   segments[1].pathToParent = '/' + pathArray[0]
+  //
+  // and in general:
+  //
+  //   segments[n].pathToParent = segments[n-1].pathToParent + '/' + pathArray[n-1]
   for (var i = 0; i < pathArray.length; i++) {
     const pathSeg = pathArray[i];
-    pathSegData.push({ segment: pathSeg, pathToParent: parentPath });
+    segments.push({ segment: pathSeg, pathToParent: parentPath });
     parentPath = parentPath+'/'+pathSeg;
   }
-  return pathSegData;
+  return segments;
 }
 
 const TreeBreadcrumb = ({ matchUrl, pathArray }) => {
   const pathSegData = makeBreadcrumbsLinkData(pathArray);
-  // `matchUrl` = /tree/:cid, and each path segment's `pathToParent` field  = /some/path/here,
-  //  where `pathToParent` = <empty string> for the first path segment
+  // `matchUrl` = /tree/:cid,
   return (
     h('nav', { 'aria-label': 'breadcrumb', role: 'navigation'},
       h('ol', { 'class': 'breadcrumb' },
@@ -69,18 +92,24 @@ const breadcrumbSegment = ({pathSeg, matchUrl, isLast }) => {
   );
 };
 
-const TreeTable = ({ locationPathname, pathArray, cid }) => {
-  const entries = getDirectory({ cid: cid, path: pathArray });
-  const listItems = entries && entries.map(entry =>
-    h('tr', {},
-      h('td', {},
-        (entry.isDir
-         ? Link({ to: `${locationPathname}/${entry.name}` }, entry.name)
-         : entry.name))));
+// `locationPathname` is location.pathname, while `pathArray` is an array
+// of path segments for a path *relative to the tree*. (i.e. when the former is
+// '/tree/:cid/some/path/here', the latter is ['some', 'path', 'here'])
+const TreeTable = ({ locationPathname, pathArray, cid, treeIsLoading, treeEntries}) => {
+  let tableBody = null;
+  if (!treeIsLoading) {
+    const entries = treeEntries
+    const listItems = entries && entries.map(entry =>
+      h('tr', {},
+        h('td', {},
+          (entry.isDir
+           ? Link({ to: `${locationPathname}/${entry.name}` }, entry.name)
+           : entry.name))));
 
+    tableBody = h('tbody', {}, listItems);
+  }
   return (
-    h('table', {class: 'table table-striped'},
-      h('tbody', {}, listItems))
+    h('table', {class: 'table table-striped'}, tableBody)
   );
 }
 

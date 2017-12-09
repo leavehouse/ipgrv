@@ -1,47 +1,43 @@
+async function getGitTreeObject(cid) {
+  const tree = (await fetch(`http://127.0.0.1:5001/api/v0/dag/get/${cid}`)
+                    .then(data => data.json()));
+  let entries = {};
+  Object.keys(tree).forEach(function(entry) {
+    if (tree[entry].mode === '40000') {
+      // is a directory
+      let entryTreeCid = tree[entry].hash['/'];
+      entries[entry] = getGitTreeObject(entryTreeCid);
+    } else {
+      // is a blob?
+      entries[entry] = null;
+    }
+  });
+  // array of files in current directory that are themselves directories
+  const dirs = Object.keys(entries)
+                     .sort()
+                     .filter(entry => entries[entry] !== null);
+
+  const promises = dirs.map(entry => entries[entry]);
+  const resolvedPromises = await Promise.all(promises);
+  // iterate through (dir, promise) pairs
+  for (var i = 0; i < dirs.length; i++) {
+    entries[dirs[i]] = { children: resolvedPromises[i] };
+  }
+
+  return entries;
+}
+
 async function getDirStructure(cid) {
   // TODO: actually make requests to IPFS
   // `dag get` the cid to get IPLD-representation of the commit object
   // for now we only handle the tree, so `dag get` the tree object
   // then recursively parse the entire hierarchy of tree objects
+
   const commit = (await fetch(`http://127.0.0.1:5001/api/v0/dag/get/${cid}`)
                     .then(data => data.json()));
-  console.log("commit = ", commit);
   const treeCid = commit.tree['/'];
-  const commitTree = (await fetch(`http://127.0.0.1:5001/api/v0/dag/get/${treeCid}`)
-                    .then(data => data.json()));
-  console.log("commit tree = ", commitTree);
-  let ds = {};
-  Object.keys(commitTree).forEach(entry => {
-    // TODO: handle symlinks? what other kinds of files can
-    // appear in a tree object? should probably switch on commitTree[entry].mode ?
-    if (commitTree[entry].mode === '40000') {
-      // is a directory
-      let entryTreeCid = commitTree[entry].hash['/'];
-    } else {
-      // is a blob?
-      ds[entry] = null;
-    }
-  });
-  return {
-    'package.json': null,
-    '.babelrc': null,
-    'webpack.config.js': null,
-    'dist': { children: {
-      'index.html': null,
-      'styles.css': null,
-    }},
-    'src': { children: {
-      'views': { children: {
-        'index.js': null,
-        'tree.js': null,
-        'commit.js': null,
-        'foo': { children: {
-          'bar': { children: {} }
-        }},
-      }},
-      'index.js': null,
-    }},
-  };
+  const dirStructure = await getGitTreeObject(treeCid);
+  return dirStructure;
 }
 
 const cache = {
@@ -62,12 +58,13 @@ function isObject(x) {
 };
 
 // `path` is an array of path segments
-export const getDirectory = ({ cid, path }) => {
+export async function getDirectory({ cid, path }) {
   if (cid !== cache.cid) {
-    cache.dirStructure = getDirStructure(cid);
+    cache.dirStructure = await getDirStructure(cid);
     cache.cid = cid;
   }
   const subtree = navToSubtree(cache.dirStructure, path);
   return Object.keys(subtree).map(name => ({ name: name,
                                              isDir: isObject(subtree[name]) }));
 }
+

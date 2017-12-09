@@ -2,7 +2,7 @@ import { h } from "hyperapp"
 import { Route, Link } from "@hyperapp/router"
 import { getDirectory } from "./store"
 
-const demoCommitHash = "z8mWaFhg8TJBrcjq3FtHq92Y6TsqzhNs7";
+const demoCommitHash = "z8mWaFkTJhSoyd4vfxprPSi8gwTgeEePb";
 
 export const mainView = state => actions =>
   h('main', {class: 'container grid-lg'}, [

@@ -12,13 +12,13 @@
   "license": "0BSD",
   "dependencies": {
     "@hyperapp/router": "git://github.com/hyperapp/router.git#newrouter",
-    "babel-polyfill": "^6.26.0",
     "hyperapp": "^0.16.2"
   },
   "devDependencies": {
     "babel-core": "^6.26.0",
     "babel-loader": "^7.1.2",
+    "babel-polyfill": "^6.26.0",
     "babel-preset-env": "^1.6.1",
-    "webpack": "^3.9.1"
+    "webpack": "^3.10.0"
   }
 }

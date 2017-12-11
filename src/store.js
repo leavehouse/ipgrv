@@ -12,7 +12,7 @@ async function getGitTreeObject(cid) {
       entries[entry] = null;
     }
   });
-  // array of files in current directory that are themselves directories
+  // array of entries in current directory that are themselves directories
   const dirs = Object.keys(entries)
                      .sort()
                      .filter(entry => entries[entry] !== null);
@@ -68,3 +68,30 @@ export async function getDirectory({ cid, path }) {
                                              isDir: isObject(subtree[name]) }));
 }
 
+/*
+export function syncGetDirectory({ path }) {
+  let ds = {
+    'package.json': null,
+    '.babelrc': null,
+    'webpack.config.js': null,
+    'dist': { children: {
+      'index.html': null,
+      'styles.css': null,
+    }},
+    'src': { children: {
+      'views': { children: {
+        'index.js': null,
+        'tree.js': null,
+        'commit.js': null,
+        'foo': { children: {
+          'bar': { children: {} }
+        }},
+      }},
+      'index.js': null,
+    }},
+  };
+  const subtree = navToSubtree(ds, path);
+  return Object.keys(subtree).map(name => ({ name: name,
+                                             isDir: isObject(subtree[name]) }));
+}
+*/

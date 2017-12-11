@@ -1,12 +1,4 @@
 /*
-body {
-  background-color: #f9f9f9;
-}
-
-table, tr {
-  border: 1px solid #000;
-}
-
 nav ol {
   display: inline;
 }
@@ -21,3 +13,7 @@ nav li + li:before{
   padding: 0 10px;
 }
 */
+
+td.tree-entry-icon {
+  width: 1.5em;
+}

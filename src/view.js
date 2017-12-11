@@ -29,6 +29,14 @@ const Filetree = ({getTreePath, treeState}) => ({ location, match }) => {
 
   const treePathArray = pathToArray(treePath);
 
+  function getCurrentTreePath() {
+    getTreePath({ cid: match.params.cid, path: treePathArray });
+  }
+
+  // this seems ugly, because we have to calculate the true state, on the fly,
+  // from the current, potentially invalid "state" and tree path browsed to by
+  // the user. consequence of not being able to call `actions.tree.getPath`
+  // before the route to update the state?
   let treeEntries = treeState.entries;
   let treeIsLoading = treeState.isLoading;
   if (match.params.cid !== treeState.commitCid
@@ -37,8 +45,8 @@ const Filetree = ({getTreePath, treeState}) => ({ location, match }) => {
     treeEntries = [];
   }
   return (
-    h('div', {oncreate() { getTreePath({ cid: match.params.cid, path: treePathArray }) },
-              onupdate() { getTreePath({ cid: match.params.cid, path: treePathArray }) }}, [
+    h('div', {oncreate() { getCurrentTreePath() },
+              onupdate() { getCurrentTreePath() }}, [
       h('h1', {}, 'Commit object CID: '+match.params.cid),
       TreeBreadcrumb({ matchUrl: match.url, pathArray: treePathArray }),
       TreeTable({ locationPathname: location.pathname, pathArray: treePathArray,
@@ -85,10 +93,10 @@ const breadcrumbSegment = ({pathSeg, matchUrl, isLast }) => {
       (isLast
        ? pathSeg.segment
        : (pathSeg.segment === '/'
-         ? Link({ to: matchUrl },
-                h('i', {class: 'link fa fa-home', 'aria-label': 'Home'}))
-         : Link({ to: `${matchUrl}${pathSeg.pathToParent}/${pathSeg.segment}` },
-                pathSeg.segment))))
+          ? Link({ to: matchUrl },
+                 h('i', {class: 'fa fa-home', 'aria-label': 'Home'}))
+          : Link({ to: `${matchUrl}${pathSeg.pathToParent}/${pathSeg.segment}` },
+                 pathSeg.segment))))
   );
 };
 
@@ -100,11 +108,16 @@ const TreeTable = ({ locationPathname, pathArray, cid, treeIsLoading, treeEntrie
   if (!treeIsLoading) {
     const entries = treeEntries
     const listItems = entries && entries.map(entry =>
-      h('tr', {},
+      h('tr', {}, [
+        h('td', {class: 'tree-entry-icon'},
+          (entry.isDir
+           ? h('i', {class: 'fa fa-folder'})
+           : h('i', {class: 'fa fa-file-text-o'}))),
         h('td', {},
           (entry.isDir
            ? Link({ to: `${locationPathname}/${entry.name}` }, entry.name)
-           : entry.name))));
+           : entry.name)),
+      ]));
 
     tableBody = h('tbody', {}, listItems);
   }
@@ -120,7 +133,6 @@ const pathToArray = path => {
   if (path === '/') {
     return [];
   } else {
-    // trim leading and trailing slashes first
     return path.replace(/^\//, '').replace(/\/$/, '').split('/');
   }
 };

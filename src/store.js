@@ -1,3 +1,33 @@
+const cache = {
+  cid: null,
+  dirStructure: null
+};
+
+// TODO: this is wrong because we keep sorting over and over. should sort
+// once, save it in the cache?
+export async function getSortedDirectory({ cid, path }) {
+  return (await getDirectory({ cid, path })).sort(compareEntries);
+}
+
+// `path` is an array of path segments
+async function getDirectory({ cid, path }) {
+  if (cid !== cache.cid) {
+    cache.dirStructure = await getDirStructure(cid);
+    cache.cid = cid;
+  }
+  const subtree = navToSubtree(cache.dirStructure, path);
+  return Object.keys(subtree).map(name => ({ name: name,
+                                             isDir: isObject(subtree[name]) }));
+}
+
+async function getDirStructure(cid) {
+  const commit = (await fetch(`http://127.0.0.1:5001/api/v0/dag/get/${cid}`)
+                    .then(data => data.json()));
+  const treeCid = commit.tree['/'];
+  const dirStructure = await getGitTreeObject(treeCid);
+  return dirStructure;
+}
+
 async function getGitTreeObject(cid) {
   const tree = (await fetch(`http://127.0.0.1:5001/api/v0/dag/get/${cid}`)
                     .then(data => data.json()));
@@ -27,24 +57,6 @@ async function getGitTreeObject(cid) {
   return entries;
 }
 
-async function getDirStructure(cid) {
-  // TODO: actually make requests to IPFS
-  // `dag get` the cid to get IPLD-representation of the commit object
-  // for now we only handle the tree, so `dag get` the tree object
-  // then recursively parse the entire hierarchy of tree objects
-
-  const commit = (await fetch(`http://127.0.0.1:5001/api/v0/dag/get/${cid}`)
-                    .then(data => data.json()));
-  const treeCid = commit.tree['/'];
-  const dirStructure = await getGitTreeObject(treeCid);
-  return dirStructure;
-}
-
-const cache = {
-  cid: null,
-  dirStructure: null
-};
-
 const navToSubtree = (tree, pathArray) => {
   let subTree = tree;
   for (const pathSeg of pathArray) {
@@ -57,15 +69,15 @@ function isObject(x) {
   return x === Object(x);
 };
 
-// `path` is an array of path segments
-export async function getDirectory({ cid, path }) {
-  if (cid !== cache.cid) {
-    cache.dirStructure = await getDirStructure(cid);
-    cache.cid = cid;
+// if e1 is a dir and e2 isnt, e1 before e2
+// (if e2 is a dir and e1 isnt, e2 before e1)
+// for e1, e2 of same type: compare alphabetically
+function compareEntries(e1, e2) {
+  if (e1.isDir !== e2.isDir) {
+    return e1.isDir ? -1 : 1;
+  } else {
+    return e1.name <= e2.name ? -1 : 1;
   }
-  const subtree = navToSubtree(cache.dirStructure, path);
-  return Object.keys(subtree).map(name => ({ name: name,
-                                             isDir: isObject(subtree[name]) }));
 }
 
 /*

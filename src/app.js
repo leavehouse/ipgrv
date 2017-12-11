@@ -1,7 +1,7 @@
 import { app } from "hyperapp"
 import { location } from "@hyperapp/router"
 import { mainView } from "./view"
-import { getDirectory } from "./store"
+import { getSortedDirectory } from "./store"
 import { treePathEquals } from "./utils"
 
 const topics = {
@@ -31,7 +31,7 @@ const topics = {
           isLoading: true,
           entries: [],
         });
-        const entries = await getDirectory({ cid, path });
+        const entries = await getSortedDirectory({ cid, path });
         console.log("getPath, entries = ", entries);
         actions.setState({
           isLoading: false,

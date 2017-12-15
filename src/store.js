@@ -58,9 +58,33 @@ export async function getCommits({ cid, page }) {
   }
 }
 
+// `path` is an array of path segments
+export async function getBlob({ cid, path }) {
+  if (cid !== cache.tree.cid) {
+    cache.tree.dirStructure = await getDirStructure(cid);
+    cache.tree.cid = cid;
+  }
+  const blobCid = navToSubtree(cache.tree.dirStructure, path);
+
+  const blobB64 = await fetchCid(blobCid).then(function(response) {
+    return response.text();
+  }).then(function(blobResponseText) {
+    return blobResponseText.trim().replace(/^"/, '').replace(/"$/, '');
+  });
+
+  // TODO: use a library to convert to an array of bytes, only convert to
+  // string if its a text file?
+  let decodedBlobString = window.atob(blobB64);
+  const nulIndex = decodedBlobString.indexOf('\u0000');
+  return decodedBlobString.substring(nulIndex + 1)
+}
+
 async function fetchCid(cid) {
-  return (await fetch(`http://127.0.0.1:5001/api/v0/dag/get/${cid}`)
-                  .then(data => data.json()));
+  return (await fetch(`http://127.0.0.1:5001/api/v0/dag/get/${cid}`));
+}
+
+async function fetchJsonCid(cid) {
+  return (await fetchCid(cid).then(data => data.json()));
 }
 
 
@@ -80,12 +104,12 @@ async function getGitCommitsList({ cids, number }) {
   //
   // while toRequest not empty and newCommits.length < number:
   //   const nextCid = remove the cid of the oldest commit from toRequest
-  //   const nextAncestor = await fetchCid(nextCid)
+  //   const nextAncestor = await fetchJsonCid(nextCid)
   //   newCommits.push(nextAncestor);
   //   toRequest = toRequest.concat(nextAncestor.parents);
   while (toRequest.length > 0 && newCommits.length < number) {
     const nextCid = toRequest.shift();
-    const nextAncestor = await fetchCid(nextCid);
+    const nextAncestor = await fetchJsonCid(nextCid);
     newCommits.push(nextAncestor);
     if (nextAncestor.parents !== null) {
       toRequest = toRequest.concat(nextAncestor.parents.map(p => p['/']));
@@ -107,29 +131,32 @@ async function getDirectory({ cid, path }) {
 }
 
 async function getDirStructure(cid) {
-  const commit = await fetchCid(cid);
+  const commit = await fetchJsonCid(cid);
   const treeCid = commit.tree['/'];
   const dirStructure = await getGitTreeObject(treeCid);
   return dirStructure;
 }
 
 async function getGitTreeObject(cid) {
-  const tree = await fetchCid(cid);
+  const tree = await fetchJsonCid(cid);
   let entries = {};
-  Object.keys(tree).forEach(function(entry) {
+  // TODO: use Promise.all to do each directory in parallel!
+  const entryNames = Object.keys(tree);
+  for (var i = 0; i < entryNames.length; i++) {
+    const entry = entryNames[i];
     if (tree[entry].mode === '40000') {
       // is a directory
       let entryTreeCid = tree[entry].hash['/'];
-      entries[entry] = getGitTreeObject(entryTreeCid);
+      entries[entry] = await getGitTreeObject(entryTreeCid);
     } else {
-      // is a blob?
-      entries[entry] = null;
+      // is a blob, so store the blob cid instead
+      entries[entry] = await tree[entry].hash['/'];
     }
-  });
+  }
   // array of entries in current directory that are themselves directories
   const dirs = Object.keys(entries)
                      .sort()
-                     .filter(entry => entries[entry] !== null);
+                     .filter(entry => typeof entries[entry] !== 'string');
 
   const promises = dirs.map(entry => entries[entry]);
   const resolvedPromises = await Promise.all(promises);
@@ -144,7 +171,12 @@ async function getGitTreeObject(cid) {
 const navToSubtree = (tree, pathArray) => {
   let subTree = tree;
   for (const pathSeg of pathArray) {
-    subTree = subTree[pathSeg].children;
+    subTree = subTree[pathSeg];
+    if (typeof subTree !== 'string') {
+      // if its not a blob, it's a tree, says me! (TODO: make sure this works with
+      // symlinks and submodules and whatever)
+      subTree = subTree.children
+    }
   }
   return subTree;
 };

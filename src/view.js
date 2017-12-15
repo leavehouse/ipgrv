@@ -2,7 +2,7 @@ import { h } from "hyperapp"
 import { Route, Link } from "@hyperapp/router"
 import { treePathEquals } from "./utils"
 
-const ipgrvCommitHash = "z8mWaFkTJhSoyd4vfxprPSi8gwTgeEePb";
+const ipgrvCommitHash = "z8mWaHXBDDx9acpiZWjgBDCBQx19my1LJ";
 const hyperappCommitHash = "z8mWaGke4NCrkPUptjA2reLUkL1K8UT8z";
 
 export const mainView = state => actions =>
@@ -12,13 +12,18 @@ export const mainView = state => actions =>
       path: '/tree/:cid',
       render: Filetree({ getTreePath: actions.tree.getPath,
                          treeState: state.tree }),
-      parent: true
+      parent: true,
+    }),
+    Route({
+      path: '/blob/:cid',
+      render: Blob({ getBlob: actions.blob.get, blobState: state.blob }),
+      parent: true,
     }),
     Route({
       path: '/commits/:cid',
       render: CommitHistory({ getCommitsPage: actions.commits.getPage,
                               commitsState: state.commits }),
-      parent: true
+      parent: true,
     }),
   ]);
 
@@ -28,13 +33,23 @@ const Home = () =>
     h('li', {}, Link({ to: `/tree/${hyperappCommitHash}` }, 'hyperapp repo')),
   ]);
 
+const extractTreePathArray = (pathname, matchUrl) => {
+  const treePath = (pathname.length === matchUrl.length
+                    ? '/'
+                    : pathname.substring(matchUrl.length));
+  return pathToArray(treePath);
+}
+
 // Filetree is a route view, so props have to be passed in before.
 const Filetree = ({getTreePath, treeState}) => ({ location, match }) => {
+  const treePathArray = extractTreePathArray(location.pathname, match.url)
+
+  /*
   const treePath = (location.pathname.length === match.url.length
                     ? '/'
                     : location.pathname.substring(match.url.length));
-
   const treePathArray = pathToArray(treePath);
+  */
 
   function getCurrentTreePath() {
     getTreePath({ cid: match.params.cid, path: treePathArray });
@@ -62,6 +77,22 @@ const Filetree = ({getTreePath, treeState}) => ({ location, match }) => {
     ])
   );
 }
+
+const Blob = ({getBlob, blobState}) => ({ location, match }) => {
+  const treePathArray = extractTreePathArray(location.pathname, match.url)
+  function getCurrentBlobPath() {
+    getBlob({ cid: match.params.cid, path: treePathArray });
+  }
+  return (
+    h('div', {oncreate() { getCurrentBlobPath() },
+              onupdate() { getCurrentBlobPath() }}, [
+      h('h1', {}, 'Blob'),
+      h('h2', {}, 'blob object CID: '+match.params.cid),
+      TreeBreadcrumb({ matchUrl: match.url, pathArray: treePathArray }),
+      h('pre', {}, blobState.data),
+    ])
+  );
+};
 
 const CommitHistory = ({getCommitsPage, commitsState}) => ({ location, match }) => {
   // get the page number from the url. This will become the new state
@@ -173,15 +204,20 @@ const TreeBreadcrumb = ({ matchUrl, pathArray }) => {
   );
 };
 
+const pathBlobToTree = path => path.replace(/^\/blob/, '/tree');
+const pathTreeToBlob = path => path.replace(/^\/tree/, '/blob');
+
 const breadcrumbSegment = ({pathSeg, matchUrl, isLast }) => {
+  // replace a starting '/blob' with '/tree' so this component can be used in Blob
+  const pathBase = pathBlobToTree(matchUrl);
   return (
     h('li', {'class': 'breadcrumb-item'},
       (isLast
        ? pathSeg.segment
        : (pathSeg.segment === '/'
-          ? Link({ to: matchUrl },
+          ? Link({ to: pathBase },
                  h('i', {class: 'fa fa-home', 'aria-label': 'Home'}))
-          : Link({ to: `${matchUrl}${pathSeg.pathToParent}/${pathSeg.segment}` },
+          : Link({ to: `${pathBase}${pathSeg.pathToParent}/${pathSeg.segment}` },
                  pathSeg.segment))))
   );
 };
@@ -202,7 +238,8 @@ const TreeTable = ({ locationPathname, pathArray, cid, treeIsLoading, treeEntrie
         h('td', {},
           (entry.isDir
            ? Link({ to: `${locationPathname}/${entry.name}` }, entry.name)
-           : entry.name)),
+           : Link({ to: `${pathTreeToBlob(locationPathname)}/${entry.name}` },
+                  entry.name))),
       ]));
 
     tableBody = h('tbody', {}, listItems);

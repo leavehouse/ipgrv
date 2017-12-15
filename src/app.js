@@ -1,7 +1,7 @@
 import { app } from "hyperapp"
 import { location } from "@hyperapp/router"
 import { mainView } from "./view"
-import { getSortedDirectory, getCommits } from "./store"
+import { getSortedDirectory, getCommits, getBlob } from "./store"
 import { treePathEquals } from "./utils"
 
 const topics = {
@@ -14,6 +14,12 @@ const topics = {
       path: null,
       isLoading: false,
       entries: [],
+    },
+    blob: {
+      commitCid: null,
+      path: null,
+      isLoading: false,
+      data: null,
     },
     commits: {
       commitCid: null,
@@ -42,6 +48,27 @@ const topics = {
         actions.setState({
           isLoading: false,
           entries: entries,
+        });
+      },
+    },
+    // TODO
+    blob: {
+      setState: newState => newState,
+      get: ({cid, path}) => state => async actions => {
+        if (state.commitCid === cid && treePathEquals(state.path, path)) {
+          return;
+        }
+        actions.setState({
+          commitCid: cid,
+          path: path,
+          isLoading: true,
+          data: null,
+        });
+        const data = await getBlob({ cid, path });
+        // TODO: distinguish between binary data and text (i.e. unicode?) data
+        actions.setState({
+          isLoading: false,
+          data: data,
         });
       },
     },

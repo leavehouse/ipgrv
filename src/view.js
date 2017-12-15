@@ -10,7 +10,14 @@ export const mainView = state => actions =>
     Route({ path: '/', render: Home }),
     Route({
       path: '/tree/:cid',
-      render: Filetree({getTreePath: actions.tree.getPath, treeState: state.tree }),
+      render: Filetree({ getTreePath: actions.tree.getPath,
+                         treeState: state.tree }),
+      parent: true
+    }),
+    Route({
+      path: '/commits/:cid',
+      render: CommitHistory({ getCommitsPage: actions.commits.getPage,
+                              commitsState: state.commits }),
       parent: true
     }),
   ]);
@@ -37,23 +44,102 @@ const Filetree = ({getTreePath, treeState}) => ({ location, match }) => {
   // from the current, potentially invalid "state" and tree path browsed to by
   // the user. consequence of not being able to call `actions.tree.getPath`
   // before the route to update the state?
-  let treeEntries = treeState.entries;
   let treeIsLoading = treeState.isLoading;
   if (match.params.cid !== treeState.commitCid
       || !treePathEquals(treePathArray, treeState.path)) {
     treeIsLoading = true;
-    treeEntries = [];
   }
   return (
     h('div', {oncreate() { getCurrentTreePath() },
               onupdate() { getCurrentTreePath() }}, [
-      h('h1', {}, 'Commit object CID: '+match.params.cid),
+      h('h1', {}, 'Tree'),
+      h('h2', {}, 'commit object CID: '+match.params.cid),
+      h('p', {}, Link({ to: `/commits/${match.params.cid}` }, 'Commit history')),
       TreeBreadcrumb({ matchUrl: match.url, pathArray: treePathArray }),
       TreeTable({ locationPathname: location.pathname, pathArray: treePathArray,
-                  cid: match.params.cid, treeEntries, treeIsLoading }),
+                  cid: match.params.cid, treeEntries: treeState.entries,
+                  treeIsLoading }),
     ])
   );
 }
+
+const CommitHistory = ({getCommitsPage, commitsState}) => ({ location, match }) => {
+  // get the page number from the url. This will become the new state
+  const commitPagePath = (location.pathname.length === match.url.length
+                          ? '/1'
+                          : location.pathname.substring(match.url.length));
+  const parsedCommitPage = parseInt(commitPagePath.substring(1));
+  if (isNaN(parsedCommitPage)) {
+    throw new Error("Invalid route, fix this later");
+  }
+
+  function getCurrentCommitPage() {
+    getCommitsPage({ cid: match.params.cid, page: parsedCommitPage });
+  }
+
+  const commitListItems = commitsState.list.map(commit => {
+    const authorCommitter =
+      commit.author.email === commit.committer.email
+        ? `by ${commit.author.name} <${commit.author.email}>`
+        : `by ${commit.author.name} <${commit.author.email}> with ${commit.committer.name} <${commit.committer.email}>`;
+
+    const parseCommitDateString = dateStr => {
+      const unixTimestampStr =
+        dateStr.indexOf(' ') !== -1
+          ? dateStr.split(' ')[0]
+          : /* not sure if this is even possible */ dateStr;
+
+      // TODO: handle parse failure?
+      return parseInt(unixTimestampStr);
+    }
+    const commitTimestamp = parseCommitDateString(commit.committer.date);
+    const commitDate = new Date(commitTimestamp*1000);
+
+    return (
+      h('li', {class: 'commit-history-item'}, [
+        h('pre', {}, commit.message),
+        h('p', {}, `${authorCommitter} on ${commitDate.toLocaleString()}`),
+      ])
+    );
+  });
+
+  let pageIsLoading = commitsState.isLoading;
+  if (match.params.cid !== commitsState.commitCid
+      || commitsState.pageNumber !== parsedCommitPage) {
+    pageIsLoading = true;
+  }
+
+  // oncreate and onupdate we need request commit history from the store
+  // and update state.commits.list and state.commits.pageNumber
+
+  return (
+    h('div', {oncreate() { getCurrentCommitPage() },
+              onupdate() { getCurrentCommitPage() }}, [
+      h('h1', {}, 'Commits'),
+      h('h2', {}, 'commit object CID: '+match.params.cid),
+      !pageIsLoading && h('ol', {class: 'commit-history'}, commitListItems),
+      !pageIsLoading && CommitHistoryNavBar({
+        pageNumber: parsedCommitPage,
+        isAnotherPage: commitsState.isAnotherPage,
+        matchUrl: match.url
+      }),
+    ])
+  );
+
+};
+
+const CommitHistoryNavBar = ({ matchUrl, pageNumber, isAnotherPage }) =>
+  h('nav', {class: 'commit-history-nav'},
+    h('ul', {}, [
+      pageNumber === 1
+        ? null
+        : h('li', {},
+            Link({to: `${matchUrl}/${pageNumber - 1}` }, 'Newer')),
+      isAnotherPage
+        ? h('li', {},
+            Link({to: `${matchUrl}/${pageNumber + 1}` }, 'Older'))
+        : null,
+    ]))
 
 function makeBreadcrumbsLinkData(pathArray) {
   let segments = [];

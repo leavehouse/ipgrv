@@ -1,7 +1,7 @@
 import { app } from "hyperapp"
 import { location } from "@hyperapp/router"
 import { mainView } from "./view"
-import { getSortedDirectory } from "./store"
+import { getSortedDirectory, getCommits } from "./store"
 import { treePathEquals } from "./utils"
 
 const topics = {
@@ -14,6 +14,13 @@ const topics = {
       path: null,
       isLoading: false,
       entries: [],
+    },
+    commits: {
+      commitCid: null,
+      pageNumber: null,
+      isAnotherPage: null,
+      isLoading: false,
+      list: [],
     }
   },
   actions: {
@@ -32,10 +39,35 @@ const topics = {
           entries: [],
         });
         const entries = await getSortedDirectory({ cid, path });
-        console.log("getPath, entries = ", entries);
         actions.setState({
           isLoading: false,
           entries: entries,
+        });
+      },
+    },
+    // oncreate and onupdate we need request commit history from the store
+    // and update state.commits.list and state.commits.pageNumber
+    commits: {
+      setState: newState => newState,
+      getPage: ({cid, page}) => state => async actions => {
+        if (state.commitCid === cid && state.pageNumber === page) {
+          console.log("terminating early because cid and page are the same!");
+          return;
+        }
+
+        actions.setState({
+          commitCid: cid,
+          pageNumber: page,
+          isLoading: true,
+          isAnotherPage: null,
+          list: [],
+        });
+        const { commitPage, isAnotherPage } = await getCommits({ cid, page });
+        console.log("getPage, list = ", commitPage);
+        actions.setState({
+          isLoading: false,
+          isAnotherPage: isAnotherPage,
+          list: commitPage,
         });
       },
     },

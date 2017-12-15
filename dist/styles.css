@@ -17,3 +17,27 @@ nav li + li:before{
 td.tree-entry-icon {
   width: 1.5em;
 }
+
+ol.commit-history {
+  list-style: none;
+  margin-left: 0;
+  border-top: 1px solid #e7e9ed;
+}
+
+ol.commit-history li.commit-history-item {
+  border-bottom: 1px solid #e7e9ed;
+}
+
+nav.commit-history-nav ul {
+  list-style: none;
+  display: inline;
+}
+
+nav.commit-history-nav ul li {
+  display: inline;
+}
+
+nav.commit-history-nav li + li:before {
+  content: " - ";
+  padding: 0 10px;
+}

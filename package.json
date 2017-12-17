@@ -11,8 +11,8 @@
   "author": "",
   "license": "0BSD",
   "dependencies": {
-    "@hyperapp/router": "git://github.com/hyperapp/router.git#newrouter",
-    "hyperapp": "^0.17.1"
+    "hyperapp": "git://github.com/hyperapp/hyperapp.git#1.0.0",
+    "@hyperapp/router": "git://github.com/hyperapp/router.git#newrouter"
   },
   "devDependencies": {
     "babel-core": "^6.26.0",

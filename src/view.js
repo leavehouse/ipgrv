@@ -7,8 +7,8 @@ import "prismjs/components/prism-json"
 import "prismjs/components/prism-markdown"
 import "prismjs/components/prism-typescript"
 
-const ipgrvCommitHash = "z8mWaHXBDDx9acpiZWjgBDCBQx19my1LJ";
-const hyperappCommitHash = "z8mWaGke4NCrkPUptjA2reLUkL1K8UT8z";
+const ipgrvCommitHash = "z8mWaHQgBqf1t5mJUYLBtEFVTgeU73PGk";
+const hyperappCommitHash = "z8mWaG3NDBUKsiiV88mMcWHHwqFiUC3DQ";
 
 export const mainView = (state, actions) =>
   h('main', {}, [

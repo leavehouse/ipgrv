@@ -12,7 +12,7 @@
   "license": "0BSD",
   "dependencies": {
     "@hyperapp/router": "git://github.com/hyperapp/router.git#newrouter",
-    "hyperapp": "git://github.com/hyperapp/hyperapp.git#1.0.0",
+    "hyperapp": "^0.18.0",
     "prismjs": "^1.9.0"
   },
   "devDependencies": {

@@ -117,7 +117,6 @@ const Blob = ({getBlob, blobState}) => ({ location, match }) => {
   function getCurrentBlobPath() {
     getBlob({ cid: match.params.cid, path: treePathArray });
   }
-  console.log(location.pathname);
   console.log("Prism languages = ", Prism.languages);
   let highlighted;
   if (blobState.data) {
@@ -288,7 +287,7 @@ const TreeTable = ({ locationPathname, pathArray, cid, treeIsLoading, treeEntrie
     tableBody = h('tbody', {}, listItems);
   }
   return (
-    h('table', {}, tableBody)
+    h('table', {class: 'collapse'}, tableBody)
   );
 }
 

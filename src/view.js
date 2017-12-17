@@ -5,7 +5,7 @@ import { treePathEquals } from "./utils"
 const ipgrvCommitHash = "z8mWaHXBDDx9acpiZWjgBDCBQx19my1LJ";
 const hyperappCommitHash = "z8mWaGke4NCrkPUptjA2reLUkL1K8UT8z";
 
-export const mainView = state => actions =>
+export const mainView = ({state, actions}) =>
   h('main', {class: 'container grid-lg'}, [
     Route({ path: '/', render: Home }),
     Route({

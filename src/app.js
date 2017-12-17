@@ -4,7 +4,7 @@ import { mainView } from "./view"
 import { getSortedDirectory, getCommits, getBlob } from "./store"
 import { treePathEquals } from "./utils"
 
-const topics = {
+const model = {
   state: {
     location: location.state,
     tree: {
@@ -34,7 +34,7 @@ const topics = {
     tree: {
       setState: newState => newState,
       // path is an array of path segments
-      getPath: ({cid, path}) => state => async actions => {
+      getPath: ({cid, path}) => async (state, actions) => {
         if (state.commitCid === cid && treePathEquals(state.path, path)) {
           return;
         }
@@ -54,7 +54,7 @@ const topics = {
     // TODO
     blob: {
       setState: newState => newState,
-      get: ({cid, path}) => state => async actions => {
+      get: ({cid, path}) => async (state, actions) => {
         if (state.commitCid === cid && treePathEquals(state.path, path)) {
           return;
         }
@@ -76,7 +76,7 @@ const topics = {
     // and update state.commits.list and state.commits.pageNumber
     commits: {
       setState: newState => newState,
-      getPage: ({cid, page}) => state => async actions => {
+      getPage: ({cid, page}) => async (state, actions) => {
         if (state.commitCid === cid && state.pageNumber === page) {
           console.log("terminating early because cid and page are the same!");
           return;
@@ -99,8 +99,7 @@ const topics = {
       },
     },
   },
-  view: mainView,
 };
 
-const actions = app(topics);
-const unsubscribe = location.subscribe(actions.location);
+const ipgrv = app(model, mainView, document.body);
+const unsubscribe = location.subscribe(ipgrv.actions.location);

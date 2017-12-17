@@ -11,14 +11,17 @@
   "author": "",
   "license": "0BSD",
   "dependencies": {
+    "@hyperapp/router": "git://github.com/hyperapp/router.git#newrouter",
     "hyperapp": "git://github.com/hyperapp/hyperapp.git#1.0.0",
-    "@hyperapp/router": "git://github.com/hyperapp/router.git#newrouter"
+    "prismjs": "^1.9.0"
   },
   "devDependencies": {
     "babel-core": "^6.26.0",
     "babel-loader": "^7.1.2",
     "babel-polyfill": "^6.26.0",
     "babel-preset-env": "^1.6.1",
+    "css-loader": "^0.28.7",
+    "style-loader": "^0.19.1",
     "webpack": "^3.10.0"
   }
 }

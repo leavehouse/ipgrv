@@ -1,6 +1,11 @@
 import { h } from "hyperapp"
 import { Route, Link } from "@hyperapp/router"
 import { treePathEquals } from "./utils"
+import Prism from "prismjs"
+import "prismjs/themes/prism.css"
+import "prismjs/components/prism-json"
+import "prismjs/components/prism-markdown"
+import "prismjs/components/prism-typescript"
 
 const ipgrvCommitHash = "z8mWaHXBDDx9acpiZWjgBDCBQx19my1LJ";
 const hyperappCommitHash = "z8mWaGke4NCrkPUptjA2reLUkL1K8UT8z";
@@ -78,10 +83,48 @@ const Filetree = ({getTreePath, treeState}) => ({ location, match }) => {
   );
 }
 
+function getPrismLang(pathname) {
+  const lastExt = pathname.lastIndexOf('.');
+  const pathExt = pathname.substring(lastExt + 1);
+
+  switch (pathExt) {
+    case 'css':
+      return Prism.languages.css;
+      break;
+    case 'html':
+      return Prism.languages.html;
+      break;
+    case 'js':
+      return Prism.languages.javascript;
+      break;
+    case 'json':
+      return Prism.languages.json;
+      break;
+    case 'md':
+    case 'markdown':
+      return Prism.languages.markdown;
+      break;
+    case 'ts':
+      return Prism.languages.typescript;
+      break;
+    default:
+      return null;
+  }
+}
+
 const Blob = ({getBlob, blobState}) => ({ location, match }) => {
   const treePathArray = extractTreePathArray(location.pathname, match.url)
   function getCurrentBlobPath() {
     getBlob({ cid: match.params.cid, path: treePathArray });
+  }
+  console.log(location.pathname);
+  console.log("Prism languages = ", Prism.languages);
+  let highlighted;
+  if (blobState.data) {
+    const lang = getPrismLang(location.pathname);
+    if (lang) {
+      highlighted = Prism.highlight(blobState.data, lang);
+    }
   }
   return (
     h('div', {oncreate() { getCurrentBlobPath() },
@@ -89,7 +132,7 @@ const Blob = ({getBlob, blobState}) => ({ location, match }) => {
       h('h1', {}, 'Blob'),
       h('h2', {}, 'blob object CID: '+match.params.cid),
       TreeBreadcrumb({ matchUrl: match.url, pathArray: treePathArray }),
-      h('pre', {}, blobState.data),
+      h('pre', {innerHTML: highlighted}, !highlighted && blobState.data),
     ])
   );
 };

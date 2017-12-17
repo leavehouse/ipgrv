@@ -3,6 +3,7 @@ import { location } from "@hyperapp/router"
 import { mainView } from "./view"
 import { getSortedDirectory, getCommits, getBlob } from "./store"
 import { treePathEquals } from "./utils"
+import "tachyons/css/tachyons.css"
 
 const state = {
   location: location.state,

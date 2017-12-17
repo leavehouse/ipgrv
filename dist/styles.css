@@ -1,18 +1,7 @@
-/*
-nav ol {
-  display: inline;
-}
-
-nav li {
-  display: inline;
-  list-style-type: none;
-}
-
-nav li + li:before{
-  content: " / ";
+nav li.breadcrumb-item + li:before {
+  content: "/";
   padding: 0 10px;
 }
-*/
 
 td.tree-entry-icon {
   width: 1.5em;

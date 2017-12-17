@@ -11,7 +11,7 @@ const ipgrvCommitHash = "z8mWaHXBDDx9acpiZWjgBDCBQx19my1LJ";
 const hyperappCommitHash = "z8mWaGke4NCrkPUptjA2reLUkL1K8UT8z";
 
 export const mainView = (state, actions) =>
-  h('main', {class: 'container grid-lg'}, [
+  h('main', {}, [
     Route({ path: '/', render: Home }),
     Route({
       path: '/tree/:cid',
@@ -72,8 +72,8 @@ const Filetree = ({getTreePath, treeState}) => ({ location, match }) => {
   return (
     h('div', {oncreate() { getCurrentTreePath() },
               onupdate() { getCurrentTreePath() }}, [
-      h('h1', {}, 'Tree'),
-      h('h2', {}, 'commit object CID: '+match.params.cid),
+      h('h1', {class: 'f2'}, 'Tree'),
+      h('h2', {class: 'f4'}, 'commit object CID: '+match.params.cid),
       h('p', {}, Link({ to: `/commits/${match.params.cid}` }, 'Commit history')),
       TreeBreadcrumb({ matchUrl: match.url, pathArray: treePathArray }),
       TreeTable({ locationPathname: location.pathname, pathArray: treePathArray,
@@ -129,8 +129,8 @@ const Blob = ({getBlob, blobState}) => ({ location, match }) => {
   return (
     h('div', {oncreate() { getCurrentBlobPath() },
               onupdate() { getCurrentBlobPath() }}, [
-      h('h1', {}, 'Blob'),
-      h('h2', {}, 'blob object CID: '+match.params.cid),
+      h('h1', {class: 'f2'}, 'Blob'),
+      h('h2', {class: 'f4'}, 'blob object CID: '+match.params.cid),
       TreeBreadcrumb({ matchUrl: match.url, pathArray: treePathArray }),
       h('pre', {innerHTML: highlighted}, !highlighted && blobState.data),
     ])
@@ -189,8 +189,8 @@ const CommitHistory = ({getCommitsPage, commitsState}) => ({ location, match }) 
   return (
     h('div', {oncreate() { getCurrentCommitPage() },
               onupdate() { getCurrentCommitPage() }}, [
-      h('h1', {}, 'Commits'),
-      h('h2', {}, 'commit object CID: '+match.params.cid),
+      h('h1', {class: 'f2'}, 'Commits'),
+      h('h2', {class: 'f4'}, 'commit object CID: '+match.params.cid),
       !pageIsLoading && h('ol', {class: 'commit-history'}, commitListItems),
       !pageIsLoading && CommitHistoryNavBar({
         pageNumber: parsedCommitPage,
@@ -240,7 +240,7 @@ const TreeBreadcrumb = ({ matchUrl, pathArray }) => {
   // `matchUrl` = /tree/:cid,
   return (
     h('nav', { 'aria-label': 'breadcrumb', role: 'navigation'},
-      h('ol', { 'class': 'breadcrumb' },
+      h('ol', {class: 'list pl0'},
         pathSegData
           .map((pathSeg, i) =>
             breadcrumbSegment({ pathSeg, matchUrl, isLast: i === pathSegData.length - 1}))))
@@ -254,7 +254,7 @@ const breadcrumbSegment = ({pathSeg, matchUrl, isLast }) => {
   // replace a starting '/blob' with '/tree' so this component can be used in Blob
   const pathBase = pathBlobToTree(matchUrl);
   return (
-    h('li', {'class': 'breadcrumb-item'},
+    h('li', {class: 'breadcrumb-item dib'},
       (isLast
        ? pathSeg.segment
        : (pathSeg.segment === '/'
@@ -273,7 +273,7 @@ const TreeTable = ({ locationPathname, pathArray, cid, treeIsLoading, treeEntrie
   if (!treeIsLoading) {
     const entries = treeEntries
     const listItems = entries && entries.map(entry =>
-      h('tr', {}, [
+      h('tr', {class: 'striped--light-gray'}, [
         h('td', {class: 'tree-entry-icon'},
           (entry.isDir
            ? h('i', {class: 'fa fa-folder'})
@@ -288,7 +288,7 @@ const TreeTable = ({ locationPathname, pathArray, cid, treeIsLoading, treeEntrie
     tableBody = h('tbody', {}, listItems);
   }
   return (
-    h('table', {class: 'table table-striped'}, tableBody)
+    h('table', {}, tableBody)
   );
 }
 

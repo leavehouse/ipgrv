@@ -1,8 +1,8 @@
 import { h } from "hyperapp"
-import { Route, Link } from "@hyperapp/router"
+import { Route, Link } from "hyperapp-hash-router"
 import "font-awesome/css/font-awesome.css"
 
-import { Filetree, Blob } from './filetree'
+import { Filetree, Blob } from "./filetree"
 
 const ipgrvCommitHash = "z8mWaHQgBqf1t5mJUYLBtEFVTgeU73PGk";
 const hyperappCommitHash = "z8mWaG3NDBUKsiiV88mMcWHHwqFiUC3DQ";
@@ -36,10 +36,11 @@ const Home = () =>
   ]);
 
 const CommitHistory = ({getCommitsPage, commitsState}) => ({ location, match }) => {
+  const hashPath = location.hash.substring(2);
   // get the page number from the url. This will become the new state
-  const commitPagePath = (location.pathname.length === match.url.length
+  const commitPagePath = (hashPath.length === match.url.length
                           ? '/1'
-                          : location.pathname.substring(match.url.length));
+                          : hashPath.substring(match.url.length));
   const parsedCommitPage = parseInt(commitPagePath.substring(1));
   if (isNaN(parsedCommitPage)) {
     throw new Error("Invalid route, fix this later");

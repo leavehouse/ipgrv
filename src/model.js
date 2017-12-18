@@ -1,4 +1,4 @@
-import { location } from "@hyperapp/router"
+import { location } from "hyperapp-hash-router"
 import { getSortedDirectory, getCommits, getBlob } from "./store"
 import { treePathEquals } from "./utils"
 

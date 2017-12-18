@@ -1,5 +1,5 @@
 import { app } from "hyperapp"
-import { location } from "@hyperapp/router"
+import { location } from "hyperapp-hash-router"
 import { model } from "./model"
 import { mainView } from "./view"
 import "tachyons/css/tachyons.css"

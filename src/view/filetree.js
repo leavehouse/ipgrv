@@ -1,5 +1,5 @@
 import { h } from "hyperapp"
-import { Link } from "@hyperapp/router"
+import { Link } from "hyperapp-hash-router"
 import Prism from "prismjs"
 import "prismjs/themes/prism.css"
 import "prismjs/components/prism-json"
@@ -9,14 +9,15 @@ import "prismjs/components/prism-typescript"
 import { treePathEquals } from "../utils"
 
 export const Blob = ({getBlob, blobState}) => ({ location, match }) => {
-  const treePathArray = extractTreePathArray(location.pathname, match.url)
+  const hashPath = location.hash.substring(2);
+  const treePathArray = extractTreePathArray(hashPath, match.url)
   function getCurrentBlobPath() {
     getBlob({ cid: match.params.cid, path: treePathArray });
   }
   console.log("Prism languages = ", Prism.languages);
   let highlighted;
   if (blobState.data) {
-    const lang = getPrismLang(location.pathname);
+    const lang = getPrismLang(hashPath);
     if (lang) {
       highlighted = Prism.highlight(blobState.data, lang);
     }
@@ -33,7 +34,8 @@ export const Blob = ({getBlob, blobState}) => ({ location, match }) => {
 };
 
 export const Filetree = ({getTreePath, treeState}) => ({ location, match }) => {
-  const treePathArray = extractTreePathArray(location.pathname, match.url)
+  const hashPath = location.hash.substring(2);
+  const treePathArray = extractTreePathArray(hashPath, match.url)
 
   /*
   const treePath = (location.pathname.length === match.url.length
@@ -62,7 +64,7 @@ export const Filetree = ({getTreePath, treeState}) => ({ location, match }) => {
       h('h2', {class: 'f4'}, 'commit object CID: '+match.params.cid),
       h('p', {}, Link({ to: `/commits/${match.params.cid}` }, 'Commit history')),
       TreeBreadcrumb({ matchUrl: match.url, pathArray: treePathArray }),
-      TreeTable({ locationPathname: location.pathname, pathArray: treePathArray,
+      TreeTable({ locationPathname: hashPath, pathArray: treePathArray,
                   cid: match.params.cid, treeEntries: treeState.entries,
                   treeIsLoading }),
     ])

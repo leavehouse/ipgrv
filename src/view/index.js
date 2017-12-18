@@ -1,5 +1,6 @@
 import { h } from "hyperapp"
 import { Route, Link } from "@hyperapp/router"
+import "font-awesome/css/font-awesome.css"
 
 import { Filetree, Blob } from './filetree'
 

@@ -80,7 +80,7 @@ export async function getBlob({ cid, path }) {
 }
 
 async function fetchCid(cid) {
-  return (await fetch(`http://127.0.0.1:5001/api/v0/dag/get/${cid}`));
+  return (await fetch(`http://127.0.0.1:8080/api/v0/dag/get/${cid}`));
 }
 
 async function fetchJsonCid(cid) {

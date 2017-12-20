@@ -53,7 +53,7 @@ export async function getCommits({ cid, page }) {
   // git commit objects. page 1 should be list indexes `{0, ..., PER_PAGE - 1}`,
   // and in general page n is `{(n-1)*PER_PAGE, ..., n*PER_PAGE - 1}`
   return {
-    commitPage: cache.commits.list.slice((page-1)*PER_PAGE, page*PER_PAGE),
+    commits: cache.commits.list.slice((page-1)*PER_PAGE, page*PER_PAGE),
     isAnotherPage: cache.commits.nextAncestorCids.length > 0,
   }
 }
@@ -110,7 +110,7 @@ async function getGitCommitsList({ cids, number }) {
   while (toRequest.length > 0 && newCommits.length < number) {
     const nextCid = toRequest.shift();
     const nextAncestor = await fetchJsonCid(nextCid);
-    newCommits.push(nextAncestor);
+    newCommits.push({ cid: nextCid, commitObject: nextAncestor });
     if (nextAncestor.parents !== null) {
       toRequest = toRequest.concat(nextAncestor.parents.map(p => p['/']));
     }

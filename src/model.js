@@ -87,12 +87,11 @@ const actions = {
         isAnotherPage: null,
         list: [],
       });
-      const { commitPage, isAnotherPage } = await getCommits({ cid, page });
-      console.log("getPage, list = ", commitPage);
+      const { commits, isAnotherPage } = await getCommits({ cid, page });
       actions.setState({
         isLoading: false,
         isAnotherPage: isAnotherPage,
-        list: commitPage,
+        list: commits,
       });
     },
   },

@@ -1,3 +1,4 @@
+import CID from "cids"
 import { h } from "hyperapp"
 import { Link } from "hyperapp-hash-router"
 import Prism from "prismjs"
@@ -26,7 +27,6 @@ export const Blob = ({getBlob, blobState}) => ({ location, match }) => {
     h('div', {oncreate() { getCurrentBlobPath() },
               onupdate() { getCurrentBlobPath() }}, [
       h('h1', {class: 'f2'}, 'Blob'),
-      h('h2', {class: 'f4'}, 'blob object CID: '+match.params.cid),
       TreeBreadcrumb({ matchUrl: match.url, pathArray: treePathArray }),
       h('pre', {innerHTML: highlighted}, !highlighted && blobState.data),
     ])
@@ -36,13 +36,6 @@ export const Blob = ({getBlob, blobState}) => ({ location, match }) => {
 export const Filetree = ({getTreePath, treeState}) => ({ location, match }) => {
   const hashPath = location.hash.substring(2);
   const treePathArray = extractTreePathArray(hashPath, match.url)
-
-  /*
-  const treePath = (location.pathname.length === match.url.length
-                    ? '/'
-                    : location.pathname.substring(match.url.length));
-  const treePathArray = pathToArray(treePath);
-  */
 
   function getCurrentTreePath() {
     getTreePath({ cid: match.params.cid, path: treePathArray });
@@ -57,12 +50,17 @@ export const Filetree = ({getTreePath, treeState}) => ({ location, match }) => {
       || !treePathEquals(treePathArray, treeState.path)) {
     treeIsLoading = true;
   }
+
+  const commitCid = new CID(match.params.cid);
+  const commitMultihash = commitCid.buffer.slice(commitCid.prefix.length)
+                                          .toString('hex');
   return (
     h('div', {oncreate() { getCurrentTreePath() },
               onupdate() { getCurrentTreePath() }}, [
       h('h1', {class: 'f2'}, 'Tree'),
       h('h2', {class: 'f4'}, 'commit object CID: '+match.params.cid),
       h('p', {}, Link({ to: `/commits/${match.params.cid}` }, 'Commit history')),
+      h('p', {}, `To clone: git clone ipld::${commitMultihash}`),
       TreeBreadcrumb({ matchUrl: match.url, pathArray: treePathArray }),
       TreeTable({ locationPathname: hashPath, pathArray: treePathArray,
                   cid: match.params.cid, treeEntries: treeState.entries,

@@ -11,8 +11,9 @@
   "author": "",
   "license": "0BSD",
   "dependencies": {
-    "hyperapp-hash-router": "git://github.com/leavehouse/hyperapp-hash-router",
+    "cids": "^0.5.2",
     "hyperapp": "^0.18.0",
+    "hyperapp-hash-router": "git://github.com/leavehouse/hyperapp-hash-router",
     "prismjs": "^1.9.0"
   },
   "devDependencies": {

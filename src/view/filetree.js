@@ -15,7 +15,6 @@ export const Blob = ({getBlob, blobState}) => ({ location, match }) => {
   function getCurrentBlobPath() {
     getBlob({ cid: match.params.cid, path: treePathArray });
   }
-  console.log("Prism languages = ", Prism.languages);
   let highlighted;
   if (blobState.data) {
     const lang = getPrismLang(hashPath);

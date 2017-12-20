@@ -95,7 +95,6 @@ async function fetchJsonCid(cid) {
 //   `newCommits` - list of at least `number` IPLD git commit objects
 //   `nextCids` - queue of cids to use next
 async function getGitCommitsList({ cids, number }) {
-  console.log(`getGitCommitsList: cids = ${cids}, number = ${number}`);
   let newCommits = [];
   let toRequest = cids
 
@@ -195,31 +194,3 @@ function compareEntries(e1, e2) {
     return e1.name <= e2.name ? -1 : 1;
   }
 }
-
-/*
-export function syncGetDirectory({ path }) {
-  let ds = {
-    'package.json': null,
-    '.babelrc': null,
-    'webpack.config.js': null,
-    'dist': { children: {
-      'index.html': null,
-      'styles.css': null,
-    }},
-    'src': { children: {
-      'views': { children: {
-        'index.js': null,
-        'tree.js': null,
-        'commit.js': null,
-        'foo': { children: {
-          'bar': { children: {} }
-        }},
-      }},
-      'index.js': null,
-    }},
-  };
-  const subtree = navToSubtree(ds, path);
-  return Object.keys(subtree).map(name => ({ name: name,
-                                             isDir: isObject(subtree[name]) }));
-}
-*/

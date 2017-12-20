@@ -76,7 +76,6 @@ const actions = {
     setState: newState => newState,
     getPage: ({cid, page}) => async (state, actions) => {
       if (state.commitCid === cid && state.pageNumber === page) {
-        console.log("terminating early because cid and page are the same!");
         return;
       }
 

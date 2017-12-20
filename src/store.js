@@ -24,8 +24,6 @@ export async function getSortedDirectory({ cid, path }) {
 // `getCommit` takes `{ cid, page }` and returns the `page`-th page
 // of a linear commit history of the IPLD git commit object at `cid`.
 export async function getCommits({ cid, page }) {
-  // PER_PAGE =? 20
-
   // we need to make a call to getGitCommitsList in the following two scenarios:
   //  - if `cid` is not the same as what's cached
   //  - if `page` is large enough to extend beyond the list that's stored and
@@ -36,7 +34,7 @@ export async function getCommits({ cid, page }) {
       cids: [cid],
       number: neededForPage,
     });
-    cache.commits.list = cache.commits.list.concat(newCommits);
+    cache.commits.list = newCommits;
     cache.commits.nextAncestorCids = nextCids;
     cache.commits.cid = cid;
   } else if (neededForPage > cache.commits.list.length

@@ -82,12 +82,6 @@ const CommitHistory = ({getCommitsPage, commitsState}) => ({ location, match }) 
     );
   });
 
-  let pageIsLoading = commitsState.isLoading;
-  if (match.params.cid !== commitsState.commitCid
-      || commitsState.pageNumber !== parsedCommitPage) {
-    pageIsLoading = true;
-  }
-
   // oncreate and onupdate we need request commit history from the store
   // and update state.commits.list and state.commits.pageNumber
 
@@ -96,12 +90,14 @@ const CommitHistory = ({getCommitsPage, commitsState}) => ({ location, match }) 
               onupdate() { getCurrentCommitPage() }}, [
       h('h1', {class: 'f2'}, 'Commits'),
       h('h2', {class: 'f4'}, 'commit object CID: '+match.params.cid),
-      !pageIsLoading && h('ol', {class: 'commit-history'}, commitListItems),
-      !pageIsLoading && CommitHistoryNavBar({
-        pageNumber: parsedCommitPage,
-        isAnotherPage: commitsState.isAnotherPage,
-        matchUrl: match.url
-      }),
+      !commitsState.IsLoading && [
+        h('ol', {class: 'commit-history'}, commitListItems),
+        CommitHistoryNavBar({
+          pageNumber: parsedCommitPage,
+          isAnotherPage: commitsState.isAnotherPage,
+          matchUrl: match.url
+        }),
+      ],
     ])
   );
 

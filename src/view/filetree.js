@@ -40,16 +40,6 @@ export const Filetree = ({getTreePath, treeState}) => ({ location, match }) => {
     getTreePath({ cid: match.params.cid, path: treePathArray });
   }
 
-  // this seems ugly, because we have to calculate the true state, on the fly,
-  // from the current, potentially invalid "state" and tree path browsed to by
-  // the user. consequence of not being able to call `actions.tree.getPath`
-  // before the route to update the state?
-  let treeIsLoading = treeState.isLoading;
-  if (match.params.cid !== treeState.commitCid
-      || !treePathEquals(treePathArray, treeState.path)) {
-    treeIsLoading = true;
-  }
-
   const commitCid = new CID(match.params.cid);
   const commitMultihash = commitCid.buffer.slice(commitCid.prefix.length)
                                           .toString('hex');
@@ -63,7 +53,7 @@ export const Filetree = ({getTreePath, treeState}) => ({ location, match }) => {
       TreeBreadcrumb({ matchUrl: match.url, pathArray: treePathArray }),
       TreeTable({ locationPathname: hashPath, pathArray: treePathArray,
                   cid: match.params.cid, treeEntries: treeState.entries,
-                  treeIsLoading }),
+                  treeIsLoading: treeState.isLoading }),
     ])
   );
 }

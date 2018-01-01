@@ -1,3 +1,6 @@
+import * as jsdiff from "diff"
+
+// TODO: rename COMMIT_HISTORY_PER_PAGE?
 const PER_PAGE = 20;
 
 const cache = {
@@ -13,12 +16,28 @@ const cache = {
     list: [],
     nextAncestorCids: null,
   },
+  // TODO: handle commits with multiple parents
+  commit: {
+    cid: null,
+    treeDiff: null,
+  },
 };
 
 // TODO: this is kinda bad because we keep sorting over and over. should sort
 // once, save it in the cache?
 export async function getSortedDirectory({ cid, path }) {
   return (await getDirectory({ cid, path })).sort(compareEntries);
+}
+
+// `path` is an array of path segments
+export async function getBlob({ cid, path }) {
+  if (cid !== cache.tree.cid) {
+    cache.tree.dirStructure = await getDirStructure(cid);
+    cache.tree.cid = cid;
+  }
+  const blobCid = navToSubtree(cache.tree.dirStructure, path);
+
+  return getGitBlobObject(blobCid);
 }
 
 // `getCommit` takes `{ cid, page }` and returns the `page`-th page
@@ -56,25 +75,13 @@ export async function getCommits({ cid, page }) {
   }
 }
 
-// `path` is an array of path segments
-export async function getBlob({ cid, path }) {
-  if (cid !== cache.tree.cid) {
-    cache.tree.dirStructure = await getDirStructure(cid);
-    cache.tree.cid = cid;
+export async function getCommitDiff({ cid }) {
+  if (cid !== cache.commit.cid) {
+    cache.commit.treeDiff = await getDiff(cid);
+    cache.commit.cid = cid;
   }
-  const blobCid = navToSubtree(cache.tree.dirStructure, path);
 
-  const blobB64 = await fetchCid(blobCid).then(function(response) {
-    return response.text();
-  }).then(function(blobResponseText) {
-    return blobResponseText.trim().replace(/^"/, '').replace(/"$/, '');
-  });
-
-  // TODO: use a library to convert to an array of bytes, only convert to
-  // string if its a text file?
-  let decodedBlobString = window.atob(blobB64);
-  const nulIndex = decodedBlobString.indexOf('\u0000');
-  return decodedBlobString.substring(nulIndex + 1)
+  return flattenTreeDiff(cache.commit.treeDiff);
 }
 
 async function fetchCid(cid) {
@@ -127,21 +134,55 @@ async function getDirectory({ cid, path }) {
                                              isDir: isObject(subtree[name]) }));
 }
 
-async function getDirStructure(cid) {
+async function getCommitTreeCid(cid) {
   const commit = await fetchJsonCid(cid);
-  const treeCid = commit.tree['/'];
+  return commit.tree['/'];
+}
+
+async function getDirStructure(cid) {
+  const treeCid = await getCommitTreeCid(cid)
   const dirStructure = await getGitTreeObject(treeCid);
   return dirStructure;
 }
 
+// FIXME: for now only handles commits with at most one parent commit.
+// Returns: an array of { <file path>, <jsdiff change object> } objects?
+async function getDiff(cid) {
+  const cidCommitObj = await fetchJsonCid(cid);
+  const treeCidNew = cidCommitObj.tree['/'];
+  if (cidCommitObj.parents && cidCommitObj.parents.length > 1) {
+    throw new Error("Displaying commits with more than one parent is unimplemented");
+  }
+  let treeCidOld;
+  if (!cidCommitObj.parents) {
+    treeCidOld = null;
+  } else if(cidCommitObj.parents.length === 1) {
+    const parentCommitCid = cidCommitObj.parents[0]['/'];
+    treeCidOld = await getCommitTreeCid(parentCommitCid);
+  }
+  return await getGitTreeDiff(treeCidNew, treeCidOld);
+}
+
+// `node` is node of a IPLD representation of a git tree object, which is
+// of the form { name: <name>, mode: <mode>, cid: <cid> }
+function nodeIsTree(node) {
+  return node.mode === "40000";
+}
+
+// returns JS object representing a git tree object. the names of the tree's
+// immediate children (which are either blobs or trees) are the keys of the
+// object, while each key's value is either the cid of the IPLD object
+// representing the blob object or a JS object representing the git tree object
+// (obtained via recursive call to `getGitTreeObject`). It's structured this way
+// because my current thinking is to read the entire filetree sans blob data
+// into memory initially. This probably doesn't work for huge repos
 async function getGitTreeObject(cid) {
   const tree = await fetchJsonCid(cid);
   let entries = {};
-  // TODO: use Promise.all to do each directory in parallel!
   const entryNames = Object.keys(tree);
   for (var i = 0; i < entryNames.length; i++) {
     const entry = entryNames[i];
-    if (tree[entry].mode === '40000') {
+    if (nodeIsTree(tree[entry])) {
       // is a directory
       let entryTreeCid = tree[entry].hash['/'];
       entries[entry] = await getGitTreeObject(entryTreeCid);
@@ -165,6 +206,20 @@ async function getGitTreeObject(cid) {
   return entries;
 }
 
+async function getGitBlobObject(cid) {
+  const blobB64 = await fetchCid(cid).then(function(response) {
+    return response.text();
+  }).then(function(blobResponseText) {
+    return blobResponseText.trim().replace(/^"/, '').replace(/"$/, '');
+  });
+
+  // TODO: use a library to convert to an array of bytes, only convert to
+  // string if its a text file?
+  let decodedBlobString = window.atob(blobB64);
+  const nulIndex = decodedBlobString.indexOf('\u0000');
+  return decodedBlobString.substring(nulIndex + 1)
+}
+
 const navToSubtree = (tree, pathArray) => {
   let subTree = tree;
   for (const pathSeg of pathArray) {
@@ -177,6 +232,90 @@ const navToSubtree = (tree, pathArray) => {
   }
   return subTree;
 };
+
+const flattenTreeDiff = (treeDiff, prefix) => {
+  prefix = prefix ? prefix+'/' : '';
+  let diffArray = [];
+  Object.keys(treeDiff).forEach(function (entry) {
+    const entryPath = prefix+entry;
+    // FIXME: This is a hack, should use a class and check for that?
+    if (Array.isArray(treeDiff[entry])) {
+      const diff = jsdiff.createPatch(entryPath, treeDiff[entry][0],
+                                      treeDiff[entry][1]);
+      diffArray.push( {path: entryPath, patch: diff })
+    } else {
+      diffArray = diffArray.concat(flattenTreeDiff(treeDiff[entry], entryPath));
+    }
+  });
+  return diffArray;
+};
+
+// returns JS object representing the difference in going from the git tree object
+// with cid `cidOld` to the git tree object with cid `cidNew`.
+async function getGitTreeDiff(cidNew, cidOld) {
+  const treeNew = cidNew ? await fetchJsonCid(cidNew) : {};
+  const treeOld = cidOld ? await fetchJsonCid(cidOld) : {};
+  const entriesNew = Object.keys(treeNew)
+  const entriesOld = Object.keys(treeOld)
+
+  // for each entry name in the old tree:
+  //  - if it's not in the new tree, it was removed
+  //  - if it's in the new tree:
+  //     - if the cids are the same, ignore
+  //     - if the cids are different:
+  //        - if old is blob
+  //           - if new is blob, just diff the blob data
+  //           - if new is tree, remove old blob and add tree's blobs
+  //        - if old is tree
+  //           - if new is blob, remove tree's blobs, add new blob
+  //           - if new are trees: recursive call getGitTreeDiff
+  // for each entry name in the new tree not in the old tree:
+  //  - if new is blob, blob was added
+  //  - o.w. new is tree, all the blobs of the tree are added
+  //
+  // FIXME: for now we assume old and new entries are of the same type, can
+  // handle other cases later (typically commits don't change a file into a
+  // directory or vice versa)
+  const diffEntries = {};
+  for (var i = 0; i < entriesOld.length; i++) {
+    const entryName = entriesOld[i];
+    const entry = treeOld[entryName];
+    if (!(entryName in treeNew)) {
+      if (nodeIsTree(entry)) {
+        diffEntries[entryName] = await getGitTreeDiff(null, entry.hash['/']);
+      } else {
+        const blobOld = await getGitBlobObject(entry.hash['/']);
+        diffEntries[entryName] = [blobOld, '']
+      }
+    } else {
+      const entryNew = treeNew[entryName];
+      if (entry.hash['/'] !== entryNew.hash['/']) {
+        if (nodeIsTree(entry)) {
+          diffEntries[entryName] = await getGitTreeDiff(entryNew.hash['/'],
+                                                        entry.hash['/']);
+        } else {
+          const blobOld = await getGitBlobObject(entry.hash['/']);
+          const blobNew = await getGitBlobObject(entryNew.hash['/']);
+          diffEntries[entryName] = [blobOld, blobNew]
+        }
+      }
+    }
+  }
+
+  for (var i = 0; i < entriesNew.length; i++) {
+    const entryName = entriesNew[i];
+    const entry = treeNew[entryName];
+    if (!(entryName in treeOld)) {
+      if (nodeIsTree(entry)) {
+        diffEntries[entryName] = await getGitTreeDiff(entry.hash['/'], null);
+      } else {
+        const blobNew = await getGitBlobObject(entry.hash['/']);
+        diffEntries[entryName] = ['', blobNew]
+      }
+    }
+  }
+  return diffEntries;
+}
 
 function isObject(x) {
   return x === Object(x);

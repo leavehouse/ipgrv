@@ -1,5 +1,5 @@
 import { location } from "hyperapp-hash-router"
-import { getSortedDirectory, getCommits, getBlob } from "./store"
+import { getSortedDirectory, getCommits, getBlob, getCommitDiff } from "./store"
 import { treePathEquals } from "./utils"
 
 const state = {
@@ -24,6 +24,11 @@ const state = {
     isAnotherPage: null,
     isLoading: false,
     list: [],
+  },
+  commit: {
+    commitCid: null,
+    isLoaded: null,
+    treeDiff: null,
   }
 };
 
@@ -91,6 +96,25 @@ const actions = {
         isLoading: false,
         isAnotherPage: isAnotherPage,
         list: commits,
+      });
+    },
+  },
+  commit: {
+    setState: newState => newState,
+    get: ({cid}) => async (state, actions) => {
+      if (state.commitCid === cid) {
+        return;
+      }
+
+      actions.setState({
+        commitCid: cid,
+        isLoaded: false,
+        treeDiff: null,
+      });
+      const commitDiff = await getCommitDiff({ cid });
+      actions.setState({
+        isLoaded: true,
+        treeDiff: commitDiff,
       });
     },
   },

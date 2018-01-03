@@ -11,7 +11,7 @@ Typical workflow:
  1. commit some changes to a branch of a git repo
  2. run `git push ipld:: HEAD`, which returns the CID of an IPLD object
     representing the commit
- 3. Once you have the CID, you can visit `http://127.0.0.1:8080/ipfs/<ipgrv hash>/tree/<CID>`
+ 3. Once you have the CID, you can visit `http://127.0.0.1:8080/ipfs/<ipgrv hash>/#!/tree/<CID>`
 
 # Usage
 
@@ -31,11 +31,13 @@ In the meantime, this project is under substantial development, so to get the ha
 
 This last command gives the hash.
 
+NOTE: `npm run build` is currently broken, so you'll have to launch the dev server.
+
 # Development
 
 `git clone` the repo, cd into the repo directory and do `npm install`. Then `npm start` starts the dev server.
 
-Before you can use this, an ipfs daemon must be running. However, before that will work, you need to modify the config of the ipfs node to allow `localhost:<dev server port>` as an origin. This can be done by executing:
+Before you can use this, an ipfs daemon must be running. However, before that will work, you need to modify the config of the ipfs node to allow `localhost:<dev server port>` as an origin. Using the default port (8000), this can be done by executing:
 
 ```
 ipfs config --json API.HTTPHeaders.Access-Control-Allow-Origin "[\"localhost:8000\"]"
@@ -55,12 +57,18 @@ You will
 
 # Features
 
-Basic filetree and commit history views. The blob view currently doesn't handle binary files appropriately, but for source files there is syntax highlighting for a handful of languages (html/css/js/typescript/markdown/json).
+ - basic filetree and commit history views
+ - for source files there is syntax highlighting for a handful of languages (html/css/js/typescript/markdown/json)
+ - basic view of the diffs for an individual commit
 
 # Missing features
 
- - Viewing the diff of an individual commit.
- - render markdown files automatically. Also render any READMEs underneath the
-   file tree view
+ - display READMEs, render markdown READMEs
+ - more generally, render markdown blobs (have option to switch to raw)
+ - syntax highlighting in diffs
+ - do syntax highlighting for *all* the languages
  - Line numbers for text files in the blob view
- - search the tree and commit history associated with a git commit object
+ - searching the file tree and commit dag
+ - to properly duplicate github features, we want to browse an entire repo, not
+   just a commit object. this additionally includes the set of branches (and
+   tags?)

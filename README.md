@@ -15,6 +15,8 @@ Typical workflow:
 
 # Usage
 
+NOTE: `npm run build` is currently broken, so the method below will not work. You'll have to launch the dev server.
+
 To use it, make sure your ipfs daemon is started, and then visit
 
 `http://127.0.0.1:8080/ipfs/<ipgrv hash>`
@@ -30,8 +32,6 @@ In the meantime, this project is under substantial development, so to get the ha
  5. `ipfs add -r dist/`
 
 This last command gives the hash.
-
-NOTE: `npm run build` is currently broken, so you'll have to launch the dev server.
 
 # Development
 

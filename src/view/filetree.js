@@ -27,7 +27,7 @@ export const Blob = ({getBlob, blobState}) => ({ location, match }) => {
               onupdate() { getCurrentBlobPath() }}, [
       h('h1', {class: 'f2'}, 'Blob'),
       TreeBreadcrumb({ matchUrl: match.url, pathArray: treePathArray }),
-      h('pre', {innerHTML: highlighted}, !highlighted && blobState.data),
+      h('pre', {innerHTML: highlighted || blobState.data}),
     ])
   );
 };

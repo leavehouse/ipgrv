@@ -7,6 +7,7 @@ import { Filetree, Blob } from "./filetree"
 
 const ipgrvCommitHash = "z8mWaJYTRDURhSbJte3ziL2urY1CQeXBs";
 const hyperappCommitHash = "z8mWaGRCe67AnSJ3izSecirBAHHtG6MAv";
+const remoteGitIpldHash = "z8mWaGrXpUa7NqpbJtD66XcosShzfPwNg";
 
 export const mainView = (state, actions) =>
   h('main', {}, [
@@ -39,6 +40,7 @@ const Home = () =>
   h('ul', {}, [
     h('li', {}, Link({ to: `/tree/${ipgrvCommitHash}` }, 'ipgrv repo')),
     h('li', {}, Link({ to: `/tree/${hyperappCommitHash}` }, 'hyperapp repo')),
+    h('li', {}, Link({ to: `/tree/${remoteGitIpldHash}` }, 'remote-git-ipld repo')),
   ]);
 
 const CommitHistoryItem = (commitInfo) => {

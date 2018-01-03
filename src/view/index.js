@@ -5,8 +5,8 @@ import "font-awesome/css/font-awesome.css"
 
 import { Filetree, Blob } from "./filetree"
 
-const ipgrvCommitHash = "z8mWaHQgBqf1t5mJUYLBtEFVTgeU73PGk";
-const hyperappCommitHash = "z8mWaG3NDBUKsiiV88mMcWHHwqFiUC3DQ";
+const ipgrvCommitHash = "z8mWaJYTRDURhSbJte3ziL2urY1CQeXBs";
+const hyperappCommitHash = "z8mWaGRCe67AnSJ3izSecirBAHHtG6MAv";
 
 export const mainView = (state, actions) =>
   h('main', {}, [

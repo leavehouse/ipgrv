@@ -31,6 +31,28 @@ In the meantime, this project is under substantial development, so to get the ha
 
 This last command gives the hash.
 
+# Development
+
+`git clone` the repo, cd into the repo directory and do `npm install`. Then `npm start` starts the dev server.
+
+Before you can use this, an ipfs daemon must be running. However, before that will work, you need to modify the config of the ipfs node to allow `localhost:<dev server port>` as an origin. This can be done by executing:
+
+```
+ipfs config --json API.HTTPHeaders.Access-Control-Allow-Origin "[\"localhost:8000\"]"
+ipfs config --json API.HTTPHeaders.Access-Control-Allow-Credentials "[\"true\"]"
+ipfs config --json API.HTTPHeaders.Access-Control-Allow-Methods "[\"PUT\", \"POST\", \"GET\"]"
+```
+
+(If the ipfs daemon is already running, it needs to be restarted after the config change)
+
+Provided that an ipfs daemon is running, you can now use the app by navigating to:
+
+`http://127.0.0.1:8000`
+
+`webpack-dev-server` will automatically reload the app in the browser when you make changes.
+
+You will
+
 # Features
 
 Basic filetree and commit history views. The blob view currently doesn't handle binary files appropriately, but for source files there is syntax highlighting for a handful of languages (html/css/js/typescript/markdown/json).

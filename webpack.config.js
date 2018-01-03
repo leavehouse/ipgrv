@@ -1,9 +1,14 @@
 const path = require('path')
 
+const PATHS = {
+  src: path.join(__dirname, "src"),
+  dist: path.join(__dirname, "dist"),
+};
+
 module.exports = {
-  entry: ['babel-polyfill', './src/app.js'],
+  entry: ['babel-polyfill', path.join(PATHS.src, 'app.js')],
   output: {
-    path: path.resolve(__dirname, './dist'),
+    path: PATHS.dist,
     filename: 'bundle.js',
   },
   module: {
@@ -24,6 +29,7 @@ module.exports = {
     ]
   },
   devServer: {
+    contentBase: PATHS.dist,
     host: process.env.HOST, // Defaults to `localhost`
     port: process.env.PORT || "8000",
   },

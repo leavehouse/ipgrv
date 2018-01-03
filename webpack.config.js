@@ -22,5 +22,9 @@ module.exports = {
         use: 'file-loader?name=fonts/[name].[ext]'
       }
     ]
-  }
+  },
+  devServer: {
+    host: process.env.HOST, // Defaults to `localhost`
+    port: process.env.PORT || "8000",
+  },
 }

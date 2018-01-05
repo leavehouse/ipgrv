@@ -7,7 +7,7 @@ import "prismjs/components/prism-json"
 import "prismjs/components/prism-markdown"
 import "prismjs/components/prism-typescript"
 
-import { treePathEquals } from "../utils"
+import { treePathEquals, escapeHtml } from "../utils"
 
 export const Blob = ({getBlob, blobState}) => ({ location, match }) => {
   const hashPath = location.hash.substring(2);
@@ -54,6 +54,7 @@ export const Filetree = ({getTreePath, treeState}) => ({ location, match }) => {
       TreeTable({ locationPathname: hashPath, pathArray: treePathArray,
                   cid: match.params.cid, treeEntries: treeState.entries,
                   treeIsLoading: treeState.isLoading }),
+      Readme({ data: treeState.readmeData, isLoading: treeState.isLoading }),
     ])
   );
 }
@@ -181,5 +182,12 @@ const TreeTable = ({ locationPathname, pathArray, cid, treeIsLoading, treeEntrie
   }
   return (
     h('table', {class: 'collapse'}, tableBody)
+  );
+}
+
+const Readme = ({ data, isLoading }) => {
+  return (
+    !isLoading && data && h('div', {},
+      h('pre', { innerHTML: escapeHtml(data) }))
   );
 }

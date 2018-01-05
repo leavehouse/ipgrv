@@ -9,8 +9,9 @@ const state = {
     // they are not used in rendering
     commitCid: null,
     path: null,
-    isLoading: false,
+    isLoading: true,
     entries: [],
+    readmeData: null,
   },
   blob: {
     commitCid: null,
@@ -45,12 +46,12 @@ const actions = {
         commitCid: cid,
         path: path,
         isLoading: true,
-        entries: [],
       });
-      const entries = await getSortedDirectory({ cid, path });
+      const { entries, readmeData } = await getSortedDirectory({ cid, path });
       actions.setState({
         isLoading: false,
         entries: entries,
+        readmeData: readmeData,
       });
     },
   },

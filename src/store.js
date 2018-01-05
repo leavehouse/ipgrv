@@ -26,7 +26,9 @@ const cache = {
 // TODO: this is kinda bad because we keep sorting over and over. should sort
 // once, save it in the cache?
 export async function getSortedDirectory({ cid, path }) {
-  return (await getDirectory({ cid, path })).sort(compareEntries);
+  const dir = await getDirectory({ cid, path });
+  dir.entries.sort(compareEntries);
+  return dir;
 }
 
 // `path` is an array of path segments
@@ -123,6 +125,10 @@ async function getGitCommitsList({ cids, number }) {
   return { newCommits, nextCids: toRequest }
 }
 
+function dirStructureEntryIsBlob (entry) {
+  return typeof entry === 'string';
+}
+
 // `path` is an array of path segments
 async function getDirectory({ cid, path }) {
   if (cid !== cache.tree.cid) {
@@ -130,8 +136,20 @@ async function getDirectory({ cid, path }) {
     cache.tree.cid = cid;
   }
   const subtree = navToSubtree(cache.tree.dirStructure, path);
-  return Object.keys(subtree).map(name => ({ name: name,
-                                             isDir: isObject(subtree[name]) }));
+  const readmeCids = Object.keys(subtree)
+                          .filter(name =>
+                            name.toUpperCase().startsWith("README") &&
+                            dirStructureEntryIsBlob(subtree[name]))
+                          .map(name => subtree[name]);
+  let readmeData = null;
+  if (readmeCids.length > 0) {
+    readmeData = await getGitBlobObject(readmeCids[0]);
+  }
+
+  const entries = Object.keys(subtree)
+                        .map(name => ({ name: name,
+                                        isDir: isObject(subtree[name]) }));
+  return { entries, readmeData };
 }
 
 async function getCommitTreeCid(cid) {

@@ -1,4 +1,4 @@
-export const treePathEquals = (path1, path2) => {
+export function treePathEquals (path1, path2) {
   if (path1.length != path2.length) {
     return false;
   }
@@ -8,4 +8,18 @@ export const treePathEquals = (path1, path2) => {
     }
   }
   return true;
+}
+
+// Don't mind me, just copying and pasting code from Stack Overflow
+// (https://stackoverflow.com/questions/1787322/htmlspecialchars-equivalent-in-javascript/4835406#4835406):
+export function escapeHtml (text) {
+    var map = {
+          '&': '&amp;',
+          '<': '&lt;',
+          '>': '&gt;',
+          '"': '&quot;',
+          "'": '&#039;'
+        };
+
+    return text.replace(/[&<>"']/g, function(m) { return map[m]; });
 }

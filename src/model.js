@@ -16,14 +16,14 @@ const state = {
   blob: {
     commitCid: null,
     path: null,
-    isLoading: false,
+    isLoading: true,
     data: null,
   },
   commits: {
     commitCid: null,
     pageNumber: null,
     isAnotherPage: null,
-    isLoading: false,
+    isLoading: true,
     list: [],
   },
   commit: {
@@ -55,7 +55,6 @@ const actions = {
       });
     },
   },
-  // TODO
   blob: {
     setState: newState => newState,
     get: ({cid, path}) => async (state, actions) => {
@@ -66,7 +65,6 @@ const actions = {
         commitCid: cid,
         path: path,
         isLoading: true,
-        data: null,
       });
       const data = await getBlob({ cid, path });
       // TODO: distinguish between binary data and text (i.e. unicode?) data

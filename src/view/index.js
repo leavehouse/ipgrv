@@ -104,7 +104,7 @@ const CommitHistory = ({getCommitsPage, commitsState}) => ({ location, match }) 
               onupdate() { getCurrentCommitPage() }}, [
       h('h1', {class: 'f2'}, 'Commits'),
       h('h2', {class: 'f4'}, 'commit object CID: '+match.params.cid),
-      !commitsState.IsLoading && [
+      !commitsState.isLoading && [
         h('ol', {class: 'commit-history'}, commitListItems),
         CommitHistoryNavBar({
           pageNumber: parsedCommitPage,

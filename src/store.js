@@ -73,7 +73,7 @@ export async function getCommits({ cid, page }) {
   // and in general page n is `{(n-1)*PER_PAGE, ..., n*PER_PAGE - 1}`
   return {
     commits: cache.commits.list.slice((page-1)*PER_PAGE, page*PER_PAGE),
-    isAnotherPage: cache.commits.nextAncestorCids.length > 0,
+    isAnotherPage: cache.commits.list.length >= page*PER_PAGE,
   }
 }
 

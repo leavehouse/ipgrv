@@ -63,8 +63,7 @@ You will
 
 # Missing features
 
- - display READMEs, render markdown READMEs
- - more generally, render markdown blobs (have option to switch to raw)
+ - render markdown blobs (have option to switch to viewing the raw text data)
  - syntax highlighting in diffs
  - do syntax highlighting for *all* the languages
  - Line numbers for text files in the blob view

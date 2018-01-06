@@ -11,7 +11,10 @@ const state = {
     path: null,
     isLoading: true,
     entries: [],
-    readmeData: null,
+    readme: {
+      data: null,
+      isMarkdown: false,
+    },
   },
   blob: {
     commitCid: null,
@@ -47,11 +50,11 @@ const actions = {
         path: path,
         isLoading: true,
       });
-      const { entries, readmeData } = await getSortedDirectory({ cid, path });
+      const { entries, readme } = await getSortedDirectory({ cid, path });
       actions.setState({
         isLoading: false,
         entries: entries,
-        readmeData: readmeData,
+        readme: readme,
       });
     },
   },

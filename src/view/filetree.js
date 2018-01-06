@@ -1,6 +1,7 @@
 import CID from "cids"
 import { h } from "hyperapp"
 import { Link } from "hyperapp-hash-router"
+import marked from "marked"
 import Prism from "prismjs"
 import "prismjs/themes/prism.css"
 import "prismjs/components/prism-json"
@@ -55,7 +56,7 @@ export const Filetree = ({getTreePath, treeState}) => ({ location, match }) => {
       TreeTable({ locationPathname: hashPath, pathArray: treePathArray,
                   cid: match.params.cid, treeEntries: treeState.entries,
                   treeIsLoading: treeState.isLoading }),
-      Readme({ data: treeState.readmeData, isLoading: treeState.isLoading }),
+      Readme({ readme: treeState.readme, isLoading: treeState.isLoading }),
     ])
   );
 }
@@ -186,9 +187,12 @@ const TreeTable = ({ locationPathname, pathArray, cid, treeIsLoading, treeEntrie
   );
 }
 
-const Readme = ({ data, isLoading }) => {
+const Readme = ({ readme, isLoading }) => {
+  const escapedData = readme.data ? escapeHtml(readme.data) : null;
   return (
-    !isLoading && data && h('div', {},
-      h('pre', { innerHTML: escapeHtml(data) }))
+    !isLoading && escapedData && h('div', {},
+      h('pre', { innerHTML: readme.isMarkdown
+                             ? marked(escapedData)
+                             : escapedData }))
   );
 }

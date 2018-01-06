@@ -136,20 +136,28 @@ async function getDirectory({ cid, path }) {
     cache.tree.cid = cid;
   }
   const subtree = navToSubtree(cache.tree.dirStructure, path);
-  const readmeCids = Object.keys(subtree)
+  const readmeFileNames = Object.keys(subtree)
                           .filter(name =>
                             name.toUpperCase().startsWith("README") &&
-                            dirStructureEntryIsBlob(subtree[name]))
-                          .map(name => subtree[name]);
+                            dirStructureEntryIsBlob(subtree[name]));
   let readmeData = null;
-  if (readmeCids.length > 0) {
-    readmeData = await getGitBlobObject(readmeCids[0]);
+  let readmeIsMarkdown = false;
+  if (readmeFileNames.length > 0) {
+    const readmeName = readmeFileNames[0];
+    readmeData = await getGitBlobObject(subtree[readmeName]);
+    // ALERT: this is duplicated w.r.t. the logic for doing syntax highlighting
+    if (readmeName.endsWith('.md') || readmeName.endsWith('.markdown')) {
+      readmeIsMarkdown = true;
+    }
   }
 
   const entries = Object.keys(subtree)
                         .map(name => ({ name: name,
                                         isDir: isObject(subtree[name]) }));
-  return { entries, readmeData };
+  return {
+    entries,
+    readme: { data: readmeData, isMarkdown: readmeIsMarkdown },
+  };
 }
 
 async function getCommitTreeCid(cid) {

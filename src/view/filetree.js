@@ -188,11 +188,10 @@ const TreeTable = ({ locationPathname, pathArray, cid, treeIsLoading, treeEntrie
 }
 
 const Readme = ({ readme, isLoading }) => {
-  const escapedData = readme.data ? escapeHtml(readme.data) : null;
   return (
-    !isLoading && escapedData && h('div', {},
+    !isLoading && readme.data && h('div', {},
       h('pre', { innerHTML: readme.isMarkdown
-                             ? marked(escapedData)
-                             : escapedData }))
+                             ? marked(readme.data)
+                             : escapeHtml(readme.data) }))
   );
 }

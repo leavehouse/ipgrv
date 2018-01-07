@@ -53,8 +53,6 @@ Provided that an ipfs daemon is running, you can now use the app by navigating t
 
 `webpack-dev-server` will automatically reload the app in the browser when you make changes.
 
-You will
-
 # Features
 
  - basic filetree and commit history views

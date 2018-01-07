@@ -5,9 +5,12 @@ import "font-awesome/css/font-awesome.css"
 
 import { Filetree, Blob } from "./filetree"
 
-const ipgrvCommitHash = "z8mWaJYTRDURhSbJte3ziL2urY1CQeXBs";
-const hyperappCommitHash = "z8mWaGRCe67AnSJ3izSecirBAHHtG6MAv";
-const remoteGitIpldHash = "z8mWaGrXpUa7NqpbJtD66XcosShzfPwNg";
+const commitCids = {
+  goIpfs: "z8mWaGp848SHMkg6nQJLWMUMcJ7pdjppt",
+  hyperapp: "z8mWaGRCe67AnSJ3izSecirBAHHtG6MAv",
+  ipgrv: "z8mWaJYTRDURhSbJte3ziL2urY1CQeXBs",
+  remoteGitIpld: "z8mWaGrXpUa7NqpbJtD66XcosShzfPwNg",
+};
 
 export const mainView = (state, actions) =>
   h('main', {}, [
@@ -37,10 +40,15 @@ export const mainView = (state, actions) =>
   ]);
 
 const Home = () =>
-  h('ul', {}, [
-    h('li', {}, Link({ to: `/tree/${ipgrvCommitHash}` }, 'ipgrv repo')),
-    h('li', {}, Link({ to: `/tree/${hyperappCommitHash}` }, 'hyperapp repo')),
-    h('li', {}, Link({ to: `/tree/${remoteGitIpldHash}` }, 'remote-git-ipld repo')),
+  h('div', {}, [
+    'Demo repos: ',
+    h('ul', {}, [
+      h('li', {}, Link({ to: `/tree/${commitCids.goIpfs}` }, 'go-ipfs')),
+      h('li', {}, Link({ to: `/tree/${commitCids.remoteGitIpld}` },
+                       'remote-git-ipld')),
+      h('li', {}, Link({ to: `/tree/${commitCids.ipgrv}` }, 'ipgrv')),
+      h('li', {}, Link({ to: `/tree/${commitCids.hyperapp}` }, 'hyperapp')),
+    ]),
   ]);
 
 const CommitHistoryItem = (commitInfo) => {

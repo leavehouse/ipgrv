@@ -39,6 +39,32 @@ export const CommitHistory = ({getCommitsPage, commitsState}) => ({ location, ma
 
 };
 
+export const Commit = ({ getCommitDiff, commitState }) => ({ location, match }) => {
+  function getCurrentCommitDiff() {
+    getCommitDiff({ cid: match.params.cid });
+  }
+
+  let diffItems;
+  if (commitState.isLoaded) {
+    diffItems = commitState.treeDiff.map(({ patch }) => {
+      return (
+        h('div', {}, [
+          h('pre', {}, patch),
+        ])
+      );
+    });
+  };
+
+  return (
+    h('div', {oncreate() { getCurrentCommitDiff() },
+              onupdate() { getCurrentCommitDiff() }}, [
+      h('h1', {class: 'f4'}, 'commit object CID: '+match.params.cid),
+      h('p', {}, 'TODO: info about the commit'),
+      diffItems,
+    ])
+  );
+};
+
 const CommitHistoryItem = (commitInfo) => {
   const commit = commitInfo.commitObject;
   // git commit date strings seem to be formatted like

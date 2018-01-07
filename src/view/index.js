@@ -4,7 +4,7 @@ import { Route, Link } from "hyperapp-hash-router"
 import "font-awesome/css/font-awesome.css"
 
 import { Filetree, Blob } from "./filetree"
-import { CommitHistory } from "./commit-history"
+import { Commit, CommitHistory, } from "./commits"
 
 const commitCids = {
   goIpfs: "z8mWaGp848SHMkg6nQJLWMUMcJ7pdjppt",
@@ -51,30 +51,3 @@ const Home = () =>
       h('li', {}, Link({ to: `/tree/${commitCids.hyperapp}` }, 'hyperapp')),
     ]),
   ]);
-
-
-const Commit = ({ getCommitDiff, commitState }) => ({ location, match }) => {
-  function getCurrentCommitDiff() {
-    getCommitDiff({ cid: match.params.cid });
-  }
-
-  let diffItems;
-  if (commitState.isLoaded) {
-    diffItems = commitState.treeDiff.map(({ patch }) => {
-      return (
-        h('div', {}, [
-          h('pre', {}, patch),
-        ])
-      );
-    });
-  };
-
-  return (
-    h('div', {oncreate() { getCurrentCommitDiff() },
-              onupdate() { getCurrentCommitDiff() }}, [
-      h('h1', {class: 'f4'}, 'commit object CID: '+match.params.cid),
-      h('p', {}, 'TODO: info about the commit'),
-      diffItems,
-    ])
-  );
-};

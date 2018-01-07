@@ -1,6 +1,8 @@
 import { h } from "hyperapp"
 import { Link } from "hyperapp-hash-router"
 
+export const commitsPerPage = 20;
+
 export const CommitHistory = ({getCommitsPage, commitsState}) => ({ location, match }) => {
   const hashPath = location.hash.substring(2);
   // get the page number from the url. This will become the new state

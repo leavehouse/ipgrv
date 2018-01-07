@@ -1,8 +1,5 @@
 import * as jsdiff from "diff"
 
-// TODO: rename COMMIT_HISTORY_PER_PAGE?
-const PER_PAGE = 20;
-
 const cache = {
   tree: {
     cid: null,
@@ -44,12 +41,12 @@ export async function getBlob({ cid, path }) {
 
 // `getCommit` takes `{ cid, page }` and returns the `page`-th page
 // of a linear commit history of the IPLD git commit object at `cid`.
-export async function getCommits({ cid, page }) {
+export async function getCommits({ cid, page, perPage }) {
   // we need to make a call to getGitCommitsList in the following two scenarios:
   //  - if `cid` is not the same as what's cached
   //  - if `page` is large enough to extend beyond the list that's stored and
   //    there are additional commits to fetch
-  const neededForPage = page*PER_PAGE;
+  const neededForPage = page*perPage;
   if (cid !== cache.commits.cid) {
     const { newCommits, nextCids } = await getGitCommitsList({
       cids: [cid],
@@ -68,12 +65,12 @@ export async function getCommits({ cid, page }) {
     cache.commits.nextAncestorCids = nextCids;
   }
 
-  // return the correct page, which is an array of length `PER_PAGE` of IPLD
-  // git commit objects. page 1 should be list indexes `{0, ..., PER_PAGE - 1}`,
-  // and in general page n is `{(n-1)*PER_PAGE, ..., n*PER_PAGE - 1}`
+  // return the correct page, which is an array of length `perPage` of IPLD
+  // git commit objects. page 1 should be list indexes `{0, ..., perPage - 1}`,
+  // and in general page n is `{(n-1)*perPage, ..., n*perPage - 1}`
   return {
-    commits: cache.commits.list.slice((page-1)*PER_PAGE, page*PER_PAGE),
-    isAnotherPage: cache.commits.list.length >= page*PER_PAGE,
+    commits: cache.commits.list.slice((page-1)*perPage, page*perPage),
+    isAnotherPage: cache.commits.list.length >= page*perPage,
   }
 }
 

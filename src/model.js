@@ -1,6 +1,7 @@
 import { location } from "hyperapp-hash-router"
 import { getSortedDirectory, getCommits, getBlob, getCommitDiff } from "./store"
 import { treePathEquals } from "./utils"
+import { commitsPerPage } from "./view/commits"
 
 const state = {
   location: location.state,
@@ -93,7 +94,11 @@ const actions = {
         isAnotherPage: null,
         list: [],
       });
-      const { commits, isAnotherPage } = await getCommits({ cid, page });
+      const { commits, isAnotherPage } = await getCommits({
+        cid,
+        page,
+        perPage: commitsPerPage
+      });
       actions.setState({
         isLoading: false,
         isAnotherPage: isAnotherPage,

@@ -24,8 +24,8 @@ export const CommitHistory = ({getCommitsPage, commitsState}) => ({ location, ma
   return (
     h('div', {oncreate() { getCurrentCommitPage() },
               onupdate() { getCurrentCommitPage() }}, [
-      h('h1', {class: 'f2'}, 'Commits'),
-      h('h2', {class: 'f4'}, 'commit object CID: '+match.params.cid),
+      h('h1', {class: 'f4'}, 'commit object CID: '+match.params.cid),
+      h('p', {}, Link({ to: `/tree/${match.params.cid}` }, 'File tree')),
       !commitsState.isLoading && [
         h('ol', {class: 'commit-history'}, commitListItems),
         CommitHistoryNavBar({

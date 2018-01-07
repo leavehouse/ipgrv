@@ -26,7 +26,7 @@ export const Blob = ({getBlob, blobState}) => ({ location, match }) => {
   return (
     h('div', {oncreate() { getCurrentBlobPath() },
               onupdate() { getCurrentBlobPath() }}, [
-      h('h1', {class: 'f2'}, 'Blob'),
+      h('h1', {class: 'f4'}, 'commit object CID: '+match.params.cid),
       TreeBreadcrumb({ matchUrl: match.url, pathArray: treePathArray }),
       !blobState.isLoading && blobState.data && h('pre',
         {innerHTML: highlighted || escapeHtml(blobState.data)}),
@@ -48,8 +48,7 @@ export const Filetree = ({getTreePath, treeState}) => ({ location, match }) => {
   return (
     h('div', {oncreate() { getCurrentTreePath() },
               onupdate() { getCurrentTreePath() }}, [
-      h('h1', {class: 'f2'}, 'Tree'),
-      h('h2', {class: 'f4'}, 'commit object CID: '+match.params.cid),
+      h('h1', {class: 'f4'}, 'commit object CID: '+match.params.cid),
       h('p', {}, Link({ to: `/commits/${match.params.cid}` }, 'Commit history')),
       h('p', {}, `To clone: git clone ipld::${commitMultihash}`),
       TreeBreadcrumb({ matchUrl: match.url, pathArray: treePathArray }),

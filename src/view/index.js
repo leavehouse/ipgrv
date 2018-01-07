@@ -72,8 +72,8 @@ const Commit = ({ getCommitDiff, commitState }) => ({ location, match }) => {
   return (
     h('div', {oncreate() { getCurrentCommitDiff() },
               onupdate() { getCurrentCommitDiff() }}, [
-      h('h1', {class: 'f2'}, 'Commit'),
-      h('h2', {class: 'f4'}, 'commit object CID: '+match.params.cid),
+      h('h1', {class: 'f4'}, 'commit object CID: '+match.params.cid),
+      h('p', {}, 'TODO: info about the commit'),
       diffItems,
     ])
   );

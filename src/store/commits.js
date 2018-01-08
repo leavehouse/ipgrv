@@ -1,14 +1,15 @@
 import { fetchJsonCid } from "./index"
 import { pushArray } from "../utils"
 
-// incrementally explores more of the git commit DAG, resulting in a linear
-// history of commits (which is saved in cache.list)
+// the git commit Dag is incrementally explored in `getCommits`, which results in a
+// linear history of commits (which is saved in cache.list)
 // We only ever request enough entries to fill up to the requested page number,
 // but no more (e.g. if we request page 5 with 20 per page, it will crawl the
 // DAG 5*20 = 100 commits)
 const cache = {
   cid: null,
   list: [],
+  prev: {},
   nextAncestorCids: null,
 };
 
@@ -21,9 +22,11 @@ export async function getCommits({ cid, page, perPage }) {
   //    there are additional commits to fetch
   const neededForPage = page*perPage;
   if (cid !== cache.cid) {
+    cache.prev = {};
     const { newCommits, nextCids } = await getGitCommitsList({
       cids: [cid],
       number: neededForPage,
+      prev: cache.prev
     });
     cache.list = newCommits;
     cache.nextAncestorCids = nextCids;
@@ -33,6 +36,7 @@ export async function getCommits({ cid, page, perPage }) {
     const { newCommits, nextCids } = await getGitCommitsList({
       cids: cache.nextAncestorCids,
       number: neededForPage - cache.list.length,
+      prev: cache.prev,
     });
     pushArray(cache.list, newCommits);
     cache.nextAncestorCids = nextCids;
@@ -54,11 +58,15 @@ export async function getCommits({ cid, page, perPage }) {
 
 // Arguments:
 //   `cids` - an array of cids of git commit objects.
-//   `number` - the number of cids to return at minimum. (may return more?)
+//   `number` - the number of cids to return at minimum (may return more)
+//   `prev` - the cids previously added to the list (object of `{<cid>: true}`
+//            key-value pairs)
 // Returns:
-//   `newCommits` - list of at least `number` IPLD git commit objects
-//   `nextCids` - queue of cids to use next
-async function getGitCommitsList({ cids, number }) {
+//   `newCommits` - list of at least `number` (cid, IPLD git commit object)
+//                  pairs, none of which are duplicates of cids in `prev`
+//   `nextCids` - queue of cids of ancestor commit objects to add next
+// NOTE: items in `newCommits` are added to `prev`
+async function getGitCommitsList({ cids, number, prev }) {
   let newCommits = [];
   let toRequest = cids
 
@@ -72,10 +80,13 @@ async function getGitCommitsList({ cids, number }) {
   //   toRequest = toRequest.concat(nextAncestor.parents);
   while (toRequest.length > 0 && newCommits.length < number) {
     const nextCid = toRequest.shift();
-    const nextAncestor = await fetchJsonCid(nextCid);
-    newCommits.push({ cid: nextCid, commitObject: nextAncestor });
-    if (nextAncestor.parents !== null) {
-      toRequest = toRequest.concat(nextAncestor.parents.map(p => p['/']));
+    if (!prev[nextCid]) {
+      const nextAncestor = await fetchJsonCid(nextCid);
+      newCommits.push({ cid: nextCid, commitObject: nextAncestor });
+      if (nextAncestor.parents !== null) {
+        pushArray(toRequest, nextAncestor.parents.map(p => p['/']));
+      }
+      prev[nextCid] = true;
     }
   }
 

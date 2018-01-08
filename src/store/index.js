@@ -1,17 +1,12 @@
 import * as jsdiff from "diff"
+import { getCommits as _getCommits } from "./commits"
+
+export const getCommits = _getCommits;
 
 const cache = {
   tree: {
     cid: null,
     dirStructure: null,
-  },
-  commits: {
-    cid: null,
-    // unlike tree.dirStructure, this list may not be complete (there may be
-    // tens of thousands of commits), so we have to store the cids of next
-    // ancestor commits to gather history from
-    list: [],
-    nextAncestorCids: null,
   },
   // TODO: handle commits with multiple parents
   commit: {
@@ -37,51 +32,6 @@ export async function getBlob({ cid, path }) {
   const blobCid = navToSubtree(cache.tree.dirStructure, path);
 
   return getGitBlobObject(blobCid);
-}
-
-function pushArray(arr, xs) {
-  for (var i = 0; i < xs.length; i++) {
-    arr.push(xs[i]);
-  }
-}
-
-// `getCommit` takes `{ cid, page }` and returns the `page`-th page
-// of a linear commit history of the IPLD git commit object at `cid`.
-export async function getCommits({ cid, page, perPage }) {
-  // we need to make a call to getGitCommitsList in the following two scenarios:
-  //  - if `cid` is not the same as what's cached
-  //  - if `page` is large enough to extend beyond the list that's stored and
-  //    there are additional commits to fetch
-  const neededForPage = page*perPage;
-  if (cid !== cache.commits.cid) {
-    const { newCommits, nextCids } = await getGitCommitsList({
-      cids: [cid],
-      number: neededForPage,
-    });
-    cache.commits.list = newCommits;
-    cache.commits.nextAncestorCids = nextCids;
-    cache.commits.cid = cid;
-  } else if (neededForPage > cache.commits.list.length
-             && cache.commits.nextAncestorCids) {
-    const { newCommits, nextCids } = await getGitCommitsList({
-      cids: cache.commits.nextAncestorCids,
-      number: neededForPage - cache.commits.list.length,
-    });
-    pushArray(cache.commits.list, newCommits);
-    cache.commits.nextAncestorCids = nextCids;
-  }
-
-  const isAnotherPage = cache.commits.list.length > page*perPage ||
-    (cache.commits.list.length === page*perPage
-     && cache.commits.nextAncestorCids.length > 0);
-
-  // return the correct page, which is an array of length `perPage` of IPLD
-  // git commit objects. page 1 should be list indexes `{0, ..., perPage - 1}`,
-  // and in general page n is `{(n-1)*perPage, ..., n*perPage - 1}`
-  return {
-    commits: cache.commits.list.slice((page-1)*perPage, page*perPage),
-    isAnotherPage: isAnotherPage,
-  }
 }
 
 export async function getCommitDiff({ cid }) {
@@ -202,7 +152,7 @@ async function fetchCid(cid) {
   return (await fetch(`http://127.0.0.1:8080/api/v0/dag/get/${cid}`));
 }
 
-async function fetchJsonCid(cid) {
+export async function fetchJsonCid(cid) {
   return (await fetchCid(cid).then(data => data.json()));
 }
 
@@ -211,36 +161,6 @@ async function getCommitTreeCid(cid) {
   return commit.tree['/'];
 }
 
-
-// Arguments:
-//   `cids` - an array of cids of git commit objects.
-//   `number` - the number of cids to return at minimum. (may return more?)
-// Returns:
-//   `newCommits` - list of at least `number` IPLD git commit objects
-//   `nextCids` - queue of cids to use next
-async function getGitCommitsList({ cids, number }) {
-  let newCommits = [];
-  let toRequest = cids
-
-  // TODO: toRequest should be a priority queue of commit objects, where most
-  // recent is first?
-  //
-  // while toRequest not empty and newCommits.length < number:
-  //   const nextCid = remove the cid of the oldest commit from toRequest
-  //   const nextAncestor = await fetchJsonCid(nextCid)
-  //   newCommits.push(nextAncestor);
-  //   toRequest = toRequest.concat(nextAncestor.parents);
-  while (toRequest.length > 0 && newCommits.length < number) {
-    const nextCid = toRequest.shift();
-    const nextAncestor = await fetchJsonCid(nextCid);
-    newCommits.push({ cid: nextCid, commitObject: nextAncestor });
-    if (nextAncestor.parents !== null) {
-      toRequest = toRequest.concat(nextAncestor.parents.map(p => p['/']));
-    }
-  }
-
-  return { newCommits, nextCids: toRequest }
-}
 
 // `node` is node of a IPLD representation of a git tree object
 function nodeIsTree(node) {

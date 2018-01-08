@@ -23,3 +23,9 @@ export function escapeHtml (text) {
 
     return text.replace(/[&<>"']/g, function(m) { return map[m]; });
 }
+
+export function pushArray(arr, xs) {
+  for (var i = 0; i < xs.length; i++) {
+    arr.push(xs[i]);
+  }
+}

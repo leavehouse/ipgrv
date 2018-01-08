@@ -29,7 +29,7 @@ export const mainView = (state, actions) =>
     }),
     Route({
       path: '/commits/:cid',
-      render: CommitHistory({ getCommitsPage: actions.commits.getPage,
+      render: CommitHistory({ getPage: actions.commits.getPage,
                               commitsState: state.commits }),
       parent: true,
     }),

@@ -3,7 +3,7 @@ import { Link } from "hyperapp-hash-router"
 
 export const commitsPerPage = 20;
 
-export const CommitHistory = ({getCommitsPage, commitsState}) => ({ location, match }) => {
+export const CommitHistory = ({getPage, commitsState}) => ({ location, match }) => {
   const hashPath = location.hash.substring(2);
   // get the page number from the url. This will become the new state
   const commitPagePath = (hashPath.length === match.url.length
@@ -15,7 +15,7 @@ export const CommitHistory = ({getCommitsPage, commitsState}) => ({ location, ma
   }
 
   function getCurrentCommitPage() {
-    getCommitsPage({ cid: match.params.cid, page: parsedCommitPage });
+    getPage({ cid: match.params.cid, page: parsedCommitPage });
   }
 
   const commitListItems = commitsState.list.map(CommitHistoryItem);

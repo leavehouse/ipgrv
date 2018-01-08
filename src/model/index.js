@@ -1,7 +1,8 @@
 import { location } from "hyperapp-hash-router"
-import { getSortedDirectory, getCommits, getBlob, getCommitDiff } from "./store"
-import { treePathEquals } from "./utils"
-import { commitsPerPage } from "./view/commits"
+import { getSortedDirectory, getBlob, getCommitDiff } from "../store"
+import { treePathEquals } from "../utils"
+
+import { CommitHistory } from "./commits"
 
 const state = {
   location: location.state,
@@ -23,13 +24,7 @@ const state = {
     isLoading: true,
     data: null,
   },
-  commits: {
-    commitCid: null,
-    pageNumber: null,
-    isAnotherPage: null,
-    isLoading: true,
-    list: [],
-  },
+  commits: CommitHistory.state,
   commit: {
     commitCid: null,
     isLoaded: null,
@@ -78,34 +73,7 @@ const actions = {
       });
     },
   },
-  // oncreate and onupdate we need request commit history from the store
-  // and update state.commits.list and state.commits.pageNumber
-  commits: {
-    setState: newState => newState,
-    getPage: ({cid, page}) => async (state, actions) => {
-      if (state.commitCid === cid && state.pageNumber === page) {
-        return;
-      }
-
-      actions.setState({
-        commitCid: cid,
-        pageNumber: page,
-        isLoading: true,
-        isAnotherPage: null,
-        list: [],
-      });
-      const { commits, isAnotherPage } = await getCommits({
-        cid,
-        page,
-        perPage: commitsPerPage
-      });
-      actions.setState({
-        isLoading: false,
-        isAnotherPage: isAnotherPage,
-        list: commits,
-      });
-    },
-  },
+  commits: CommitHistory.actions,
   commit: {
     setState: newState => newState,
     get: ({cid}) => async (state, actions) => {

@@ -1,4 +1,3 @@
-import * as jsdiff from "diff"
 import { h } from "hyperapp"
 import { Route, Link } from "hyperapp-hash-router"
 import "font-awesome/css/font-awesome.css"

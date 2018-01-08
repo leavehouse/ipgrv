@@ -65,12 +65,16 @@ export async function getCommits({ cid, page, perPage }) {
     cache.commits.nextAncestorCids = nextCids;
   }
 
+  const isAnotherPage = cache.commits.list.length > page*perPage ||
+    (cache.commits.list.length === page*perPage
+     && cache.commits.nextAncestorCids.length > 0);
+
   // return the correct page, which is an array of length `perPage` of IPLD
   // git commit objects. page 1 should be list indexes `{0, ..., perPage - 1}`,
   // and in general page n is `{(n-1)*perPage, ..., n*perPage - 1}`
   return {
     commits: cache.commits.list.slice((page-1)*perPage, page*perPage),
-    isAnotherPage: cache.commits.list.length >= page*perPage,
+    isAnotherPage: isAnotherPage,
   }
 }
 

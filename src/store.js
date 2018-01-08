@@ -39,6 +39,12 @@ export async function getBlob({ cid, path }) {
   return getGitBlobObject(blobCid);
 }
 
+function pushArray(arr, xs) {
+  for (var i = 0; i < xs.length; i++) {
+    arr.push(xs[i]);
+  }
+}
+
 // `getCommit` takes `{ cid, page }` and returns the `page`-th page
 // of a linear commit history of the IPLD git commit object at `cid`.
 export async function getCommits({ cid, page, perPage }) {
@@ -61,7 +67,7 @@ export async function getCommits({ cid, page, perPage }) {
       cids: cache.commits.nextAncestorCids,
       number: neededForPage - cache.commits.list.length,
     });
-    cache.commits.list = cache.commits.list.concat(newCommits);
+    pushArray(cache.commits.list, newCommits);
     cache.commits.nextAncestorCids = nextCids;
   }
 

@@ -1,5 +1,5 @@
 import { location } from "hyperapp-hash-router"
-import { getSortedDirectory, getBlob, getCommitDiff } from "../store"
+import { getSortedDirectory, getBlob, getCommit } from "../store"
 import { treePathEquals } from "../utils"
 
 import { CommitHistory } from "./commits"
@@ -84,12 +84,12 @@ const actions = {
       actions.setState({
         commitCid: cid,
         isLoaded: false,
-        treeDiff: null,
       });
-      const commitDiff = await getCommitDiff({ cid });
+      const { commit, treeDiff } = await getCommit({ cid });
       actions.setState({
         isLoaded: true,
-        treeDiff: commitDiff,
+        commit: commit,
+        treeDiff: treeDiff,
       });
     },
   },

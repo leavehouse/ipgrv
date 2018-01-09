@@ -1,8 +1,8 @@
 import { getCommits as _getCommits } from "./commits"
-import { getCommitDiff as _getCommitDiff } from "./commit"
+import { getCommit as _getCommit } from "./commit"
 
 export const getCommits = _getCommits;
-export const getCommitDiff = _getCommitDiff;
+export const getCommit = _getCommit;
 
 const cache = {
   tree: {

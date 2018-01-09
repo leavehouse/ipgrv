@@ -6,21 +6,27 @@ import { fetchJsonCid, getCommitTreeCid, getGitBlobObject,
 // TODO: handle commits with multiple parents
 var cache = {
   cid: null,
+  commit: null,
   treeDiff: null,
 };
 
-export async function getCommitDiff({ cid }) {
+export async function getCommit({ cid }) {
   if (cid !== cache.cid) {
-    cache.treeDiff = await getDiff(cid);
+    const { commit, treeDiff } = await getCommitAndDiff(cid);
+    cache.commit = commit;
+    cache.treeDiff = treeDiff;
     cache.cid = cid;
   }
 
-  return flattenTreeDiff(cache.treeDiff);
+  return {
+    commit: cache.commit,
+    treeDiff: flattenTreeDiff(cache.treeDiff)
+  };
 }
 
 // FIXME: for now only handles commits with at most one parent commit.
 // Returns: an array of { <file path>, <jsdiff change object> } objects?
-async function getDiff(cid) {
+async function getCommitAndDiff(cid) {
   const cidCommitObj = await fetchJsonCid(cid);
   const treeCidNew = cidCommitObj.tree['/'];
   if (cidCommitObj.parents && cidCommitObj.parents.length > 1) {
@@ -33,7 +39,10 @@ async function getDiff(cid) {
     const parentCommitCid = cidCommitObj.parents[0]['/'];
     treeCidOld = await getCommitTreeCid(parentCommitCid);
   }
-  return await getGitTreeDiff(treeCidNew, treeCidOld);
+  return {
+    commit: cidCommitObj,
+    treeDiff: await getGitTreeDiff(treeCidNew, treeCidOld)
+  };
 }
 
 // returns JS object representing the difference in going from the git tree object

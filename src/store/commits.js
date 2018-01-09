@@ -62,8 +62,9 @@ export async function getCommits({ cid, page, perPage }) {
 //   `prev` - the cids previously added to the list (object of `{<cid>: true}`
 //            key-value pairs)
 // Returns:
-//   `newCommits` - list of at least `number` (cid, IPLD git commit object)
-//                  pairs, none of which are duplicates of cids in `prev`
+//   `newCommits` - list of at least `number` of objects of the form:
+//                  { cid: <cid>, commitObject: <IPLD git commit object> },
+//                  none of which are duplicates of cids in `prev`
 //   `nextCids` - queue of cids of ancestor commit objects to add next
 // NOTE: items in `newCommits` are added to `prev`
 async function getGitCommitsList({ cids, number, prev }) {

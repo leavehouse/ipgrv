@@ -6,4 +6,4 @@ import "tachyons/css/tachyons.css"
 
 const {state, actions} = model;
 const appActions = app(state, actions, mainView, document.body);
-const unsubscribe = location.subscribe(appActions.location);
+location.subscribe(appActions.location);

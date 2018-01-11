@@ -97,7 +97,7 @@ async function getGitTreeDiff(cidNew, cidOld) {
     }
   }
 
-  for (var i = 0; i < entriesNew.length; i++) {
+  for (i = 0; i < entriesNew.length; i++) {
     const entryName = entriesNew[i];
     const entry = treeNew[entryName];
     if (!(entryName in treeOld)) {

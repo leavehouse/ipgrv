@@ -41,7 +41,7 @@ export const CommitHistory = ({getPage, commitsState}) => ({ location, match }) 
 
 };
 
-export const Commit = ({ getCommitDiff, commitState }) => ({ location, match }) => {
+export const Commit = ({ getCommitDiff, commitState }) => ({ match }) => {
   function getCurrentCommitDiff() {
     getCommitDiff({ cid: match.params.cid });
   }
@@ -57,7 +57,7 @@ export const Commit = ({ getCommitDiff, commitState }) => ({ location, match }) 
       );
     });
     commitAuthorAndDate = makeCommitAuthorAndDate(commitState.commit);
-  };
+  }
 
 
   return (

@@ -8,7 +8,7 @@ import "prismjs/components/prism-json"
 import "prismjs/components/prism-markdown"
 import "prismjs/components/prism-typescript"
 
-import { treePathEquals, escapeHtml } from "../utils"
+import { escapeHtml } from "../utils"
 
 export const Blob = ({getBlob, blobState}) => ({ location, match }) => {
   const hashPath = location.hash.substring(2);
@@ -52,8 +52,7 @@ export const Filetree = ({getTreePath, treeState}) => ({ location, match }) => {
       h('p', {}, Link({ to: `/commits/${match.params.cid}` }, 'Commit history')),
       h('p', {}, `To clone: git clone ipld::${commitMultihash}`),
       TreeBreadcrumb({ matchUrl: match.url, pathArray: treePathArray }),
-      TreeTable({ locationPathname: hashPath, pathArray: treePathArray,
-                  cid: match.params.cid, treeEntries: treeState.entries,
+      TreeTable({ locationPathname: hashPath, treeEntries: treeState.entries,
                   treeIsLoading: treeState.isLoading }),
       Readme({ readme: treeState.readme, isLoading: treeState.isLoading }),
     ])
@@ -86,23 +85,17 @@ function getPrismLang(pathname) {
   switch (pathExt) {
     case 'css':
       return Prism.languages.css;
-      break;
     case 'html':
       return Prism.languages.html;
-      break;
     case 'js':
       return Prism.languages.javascript;
-      break;
     case 'json':
       return Prism.languages.json;
-      break;
     case 'md':
     case 'markdown':
       return Prism.languages.markdown;
-      break;
     case 'ts':
       return Prism.languages.typescript;
-      break;
     default:
       return null;
   }
@@ -162,7 +155,7 @@ const breadcrumbSegment = ({pathSeg, matchUrl, isLast }) => {
 // `locationPathname` is location.pathname, while `pathArray` is an array
 // of path segments for a path *relative to the tree*. (i.e. when the former is
 // '/tree/:cid/some/path/here', the latter is ['some', 'path', 'here'])
-const TreeTable = ({ locationPathname, pathArray, cid, treeIsLoading, treeEntries}) => {
+const TreeTable = ({ locationPathname, treeIsLoading, treeEntries}) => {
   let tableBody = null;
   if (!treeIsLoading) {
     const entries = treeEntries

@@ -76,7 +76,7 @@ const navToSubtree = (tree, pathArray) => {
 
 function isObject(x) {
   return x === Object(x);
-};
+}
 
 function dirStructureEntryIsBlob (entry) {
   return typeof entry === 'string';
@@ -150,7 +150,7 @@ async function getGitTreeObject(cid) {
   const promises = dirs.map(entry => entries[entry]);
   const resolvedPromises = await Promise.all(promises);
   // iterate through (dir, promise) pairs
-  for (var i = 0; i < dirs.length; i++) {
+  for (i = 0; i < dirs.length; i++) {
     entries[dirs[i]] = { children: resolvedPromises[i] };
   }
 

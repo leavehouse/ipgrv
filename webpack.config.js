@@ -1,15 +1,19 @@
-const path = require('path')
+const merge = require('webpack-merge');
+const path = require('path');
+const webpack = require('webpack');
 
 const PATHS = {
   src: path.join(__dirname, "src"),
   dist: path.join(__dirname, "dist"),
 };
 
-module.exports = {
-  entry: ['babel-polyfill', path.join(PATHS.src, 'app.js')],
+const commonConfig = {
+  entry: {
+    app: ['babel-polyfill', path.join(PATHS.src, 'app.js')],
+  },
   output: {
     path: PATHS.dist,
-    filename: 'bundle.js',
+    filename: '[name].js',
   },
   module: {
     rules: [
@@ -24,13 +28,43 @@ module.exports = {
       },
       {
         test: /\.(ttf|otf|eot|svg|woff(2)?)(\?[a-z0-9]+)?$/,
-        use: 'file-loader?name=fonts/[name].[ext]',
+        use: {
+          loader: 'file-loader',
+          options: {
+            name: 'fonts/[name].[ext]',
+          },
+        },
       }
     ]
   },
-  devServer: {
-    contentBase: PATHS.dist,
-    host: process.env.HOST, // Defaults to `localhost`
-    port: process.env.PORT || "8000",
-  },
-}
+};
+
+module.exports = env => {
+  if (env === "production") {
+    return merge(commonConfig,
+      {
+        entry: {
+          vendor: [
+            "cids", "diff", "hyperapp", "hyperapp-hash-router", "marked",
+            "prismjs"
+          ],
+        },
+        plugins: [
+          new webpack.optimize.CommonsChunkPlugin({
+            name: "vendor",
+          }),
+        ],
+      }
+    );
+  } else {
+    return merge(commonConfig,
+      {
+        devServer: {
+          contentBase: PATHS.dist,
+          host: process.env.HOST, // Defaults to `localhost`
+          port: process.env.PORT || "8000",
+        },
+      }
+    );
+  }
+};

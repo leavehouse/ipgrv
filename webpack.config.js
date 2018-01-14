@@ -45,8 +45,8 @@ module.exports = env => {
       {
         entry: {
           vendor: [
-            "cids", "diff", "hyperapp", "hyperapp-hash-router", "marked",
-            "prismjs"
+            "diff", "hyperapp", "hyperapp-hash-router", "marked", "prismjs",
+            "multibase", "multicodec", "multihashes"
           ],
         },
         plugins: [

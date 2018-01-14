@@ -11,11 +11,13 @@
   "author": "",
   "license": "0BSD",
   "dependencies": {
-    "cids": "^0.5.2",
     "diff": "^3.4.0",
     "hyperapp": "^1.0.1",
     "hyperapp-hash-router": "git://github.com/leavehouse/hyperapp-hash-router",
     "marked": "^0.3.12",
+    "multibase": "^0.4.0",
+    "multicodec": "^0.2.5",
+    "multihashes": "^0.4.13",
     "prismjs": "^1.9.0"
   },
   "devDependencies": {

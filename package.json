@@ -15,6 +15,7 @@
     "diff": "^3.4.0",
     "hyperapp": "^1.0.1",
     "hyperapp-hash-router": "git://github.com/leavehouse/hyperapp-hash-router",
+    "marked": "^0.3.12",
     "prismjs": "^1.9.0"
   },
   "devDependencies": {
@@ -28,7 +29,6 @@
     "eslint-loader": "^1.9.0",
     "file-loader": "^1.1.6",
     "font-awesome": "^4.7.0",
-    "marked": "^0.3.9",
     "style-loader": "^0.19.1",
     "tachyons": "^4.9.0",
     "webpack": "^3.10.0",

@@ -1,6 +1,4 @@
-import multibase from "multibase"
-import multicodec from "multicodec"
-import multihashes from "multihashes"
+import baseX from "base-x";
 
 export function treePathEquals (path1, path2) {
   if (path1.length != path2.length) {
@@ -34,27 +32,39 @@ export function pushArray(arr, xs) {
   }
 }
 
-// directly stolen/adapted from CID constructor in js-cids
+const BASE58 = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
+const bs58 = baseX(BASE58);
+
+// adapted from CID constructor in js-cids
+// cidStr must be a base58btc-encoded CIDv1 string.
+// TODO: work for all possible CIDv1 strings? This will entail
+//       adding js-cids as a dependency, which previously broke
+//       the production build
 function parseCid(cidStr) {
-  let version, codec, multihash;
-  if (multibase.isEncoded(cidStr)) { // CID String (encoded with multibase)
-    const cid = multibase.decode(cidStr)
-    version = parseInt(cid.slice(0, 1).toString('hex'), 16)
-    codec = multicodec.getCodec(cid.slice(1))
-    multihash = multicodec.rmPrefix(cid.slice(1))
-  } else { // bs58 string encoded multihash
-    codec = 'dag-pb'
-    multihash = multihashes.fromB58String(cidStr)
-    version = 0
+  if (cidStr.substring(0, 1) === 'z') { // CID String (encoded with multibase)
+    const cid = bs58.decode(cidStr.substring(1))
+
+    // 120 is multicodec code for 'git-raw'
+    if (cid[0] !== 1 || cid[1] !== 120) {
+      throw new Error(`expecting a v1 CID with a 'git-raw' codec, found:
+                      CID version = ${cid[0]}, codec = ${cid[1]}`);
+    }
+
+    const multihash = cid.slice(2);
+    return { version: 1, codec: 'git-raw', multihash };
+  } else {
+    throw new Error("can only handle base58btc-encoded CIDs");
   }
-  // TODO: add validation?
-  return { version, codec, multihash };
 }
 
 export function commitCloneHash(commitCid) {
   const parsedCid = parseCid(commitCid);
   const cidMultihash = parsedCid.multihash;
-  const cidMhPrefix = multihashes.prefix(cidMultihash);
-  const cidMhSansPrefix = cidMultihash.slice(cidMhPrefix.length);
+
+  if (cidMultihash[0] !== 17 || cidMultihash[1] !== 20) {
+    throw new Error("expecting a CID with sha1-based multihash");
+  }
+
+  const cidMhSansPrefix = cidMultihash.slice(2);
   return cidMhSansPrefix.toString('hex');
 }

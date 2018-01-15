@@ -11,7 +11,7 @@
   "author": "",
   "license": "0BSD",
   "dependencies": {
-    "cids": "^0.5.2",
+    "base-x": "^3.0.4",
     "diff": "^3.4.0",
     "hyperapp": "^1.0.1",
     "hyperapp-hash-router": "git://github.com/leavehouse/hyperapp-hash-router",

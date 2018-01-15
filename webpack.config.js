@@ -45,7 +45,7 @@ module.exports = env => {
       {
         entry: {
           vendor: [
-            "cids", "diff", "hyperapp", "hyperapp-hash-router", "marked",
+            "base-x", "diff", "hyperapp", "hyperapp-hash-router", "marked",
             "prismjs"
           ],
         },

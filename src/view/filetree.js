@@ -1,4 +1,3 @@
-import CID from "cids"
 import { h } from "hyperapp"
 import { Link } from "hyperapp-hash-router"
 import marked from "marked"
@@ -8,7 +7,7 @@ import "prismjs/components/prism-json"
 import "prismjs/components/prism-markdown"
 import "prismjs/components/prism-typescript"
 
-import { escapeHtml } from "../utils"
+import { escapeHtml, commitCloneHash } from "../utils"
 
 export const Blob = ({getBlob, blobState}) => ({ location, match }) => {
   const hashPath = location.hash.substring(2);
@@ -42,15 +41,14 @@ export const Filetree = ({getTreePath, treeState}) => ({ location, match }) => {
     getTreePath({ cid: match.params.cid, path: treePathArray });
   }
 
-  const commitCid = new CID(match.params.cid);
-  const commitMultihash = commitCid.buffer.slice(commitCid.prefix.length)
-                                          .toString('hex');
+  const cloneHash = commitCloneHash(match.params.cid);
+
   return (
     h('div', {oncreate() { getCurrentTreePath() },
               onupdate() { getCurrentTreePath() }}, [
       h('h1', {class: 'f4'}, 'commit object CID: '+match.params.cid),
       h('p', {}, Link({ to: `/commits/${match.params.cid}` }, 'Commit history')),
-      h('p', {}, `To clone: git clone ipld::${commitMultihash}`),
+      h('p', {}, `To clone: git clone ipld::${cloneHash}`),
       TreeBreadcrumb({ matchUrl: match.url, pathArray: treePathArray }),
       TreeTable({ locationPathname: hashPath, treeEntries: treeState.entries,
                   treeIsLoading: treeState.isLoading }),

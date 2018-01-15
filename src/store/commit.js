@@ -1,7 +1,7 @@
 import * as jsdiff from "diff"
 
-import { fetchJsonCid, getCommitTreeCid, getGitBlobObject,
-         nodeIsTree } from "./index"
+import { fetchJsonCid, getCommitTreeCid, nodeIsTree } from "./index"
+import { getGitBlobObject } from "./filetree"
 
 // TODO: handle commits with multiple parents
 var cache = {

@@ -2,7 +2,7 @@ import { app } from "hyperapp"
 import { location } from "hyperapp-hash-router"
 import "tachyons/css/tachyons.css"
 import { model } from "./model"
-import "./styles.css"
+import "./app.css"
 import { mainView } from "./view"
 
 const {state, actions} = model;

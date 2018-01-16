@@ -1,3 +1,4 @@
+const ExtractTextPlugin = require('extract-text-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const merge = require('webpack-merge');
 const path = require('path');
@@ -22,10 +23,6 @@ const commonConfig = {
         test: /\.js$/,
         exclude: /node_modules/,
         use: ['babel-loader', 'eslint-loader'],
-      },
-      {
-        test: /\.css$/,
-        use: ['style-loader', 'css-loader'],
       },
       {
         test: /\.(ttf|otf|eot|svg|woff(2)?)(\?[a-z0-9]+)?$/,
@@ -56,9 +53,24 @@ module.exports = env => {
             "prismjs"
           ],
         },
+        module: {
+          rules: [
+            {
+              test: /\.css$/,
+              use: ExtractTextPlugin.extract({
+                use: 'css-loader',
+                fallback: 'style-loader'
+              }),
+            },
+          ]
+        },
         plugins: [
           new webpack.optimize.CommonsChunkPlugin({
             name: "vendor",
+          }),
+          new ExtractTextPlugin({
+            allChunks: true,
+            filename: "styles.css"
           }),
         ],
       }
@@ -70,6 +82,14 @@ module.exports = env => {
           contentBase: PATHS.dist,
           host: process.env.HOST, // Defaults to `localhost`
           port: process.env.PORT || "8000",
+        },
+        module: {
+          rules: [
+            {
+              test: /\.css$/,
+              use: ['style-loader', 'css-loader'],
+            },
+          ]
         },
       }
     );

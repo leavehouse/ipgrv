@@ -1,3 +1,4 @@
+const HtmlWebpackPlugin = require('html-webpack-plugin');
 const merge = require('webpack-merge');
 const path = require('path');
 const webpack = require('webpack');
@@ -37,6 +38,12 @@ const commonConfig = {
       }
     ]
   },
+  plugins: [
+    new HtmlWebpackPlugin({
+      title: 'ipgrv',
+      template: './src/assets/index.html',
+    })
+  ],
 };
 
 module.exports = env => {

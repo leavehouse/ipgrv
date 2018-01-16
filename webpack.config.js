@@ -1,3 +1,4 @@
+const CleanWebpackPlugin = require('clean-webpack-plugin');
 const ExtractTextPlugin = require('extract-text-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const merge = require('webpack-merge');
@@ -65,6 +66,7 @@ module.exports = env => {
           ]
         },
         plugins: [
+          new CleanWebpackPlugin([PATHS.dist]),
           new webpack.optimize.CommonsChunkPlugin({
             name: "vendor",
           }),

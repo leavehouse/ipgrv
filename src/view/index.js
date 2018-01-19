@@ -39,14 +39,18 @@ export const mainView = (state, actions) =>
     }),
   ]);
 
-const Home = () =>
-  h('div', {}, [
-    'Demo repos: ',
-    h('ul', {}, [
-      h('li', {}, Link({ to: `/tree/${commitCids.goIpfs}` }, 'go-ipfs')),
-      h('li', {}, Link({ to: `/tree/${commitCids.remoteGitIpld}` },
-                       'remote-git-ipld')),
-      h('li', {}, Link({ to: `/tree/${commitCids.ipgrv}` }, 'ipgrv')),
-      h('li', {}, Link({ to: `/tree/${commitCids.hyperapp}` }, 'hyperapp')),
-    ]),
-  ]);
+const Home = () => {
+  document.title = "ipgrv";
+  return (
+    h('div', {}, [
+      'Demo repos: ',
+      h('ul', {}, [
+        h('li', {}, Link({ to: `/tree/${commitCids.goIpfs}` }, 'go-ipfs')),
+        h('li', {}, Link({ to: `/tree/${commitCids.remoteGitIpld}` },
+                         'remote-git-ipld')),
+        h('li', {}, Link({ to: `/tree/${commitCids.ipgrv}` }, 'ipgrv')),
+        h('li', {}, Link({ to: `/tree/${commitCids.hyperapp}` }, 'hyperapp')),
+      ]),
+    ])
+  );
+}

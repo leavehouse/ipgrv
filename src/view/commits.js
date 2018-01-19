@@ -20,8 +20,7 @@ export const CommitHistory = ({getPage, commitsState}) => ({ location, match }) 
 
   const commitListItems = commitsState.list.map(CommitHistoryItem);
 
-  // oncreate and onupdate we need request commit history from the store
-  // and update state.commits.list and state.commits.pageNumber
+  document.title = `Commits - ${match.params.cid}`;
 
   return (
     h('div', {oncreate() { getCurrentCommitPage() },
@@ -59,6 +58,7 @@ export const Commit = ({ getCommitDiff, commitState }) => ({ match }) => {
     commitAuthorAndDate = makeCommitAuthorAndDate(commitState.commit);
   }
 
+  document.title = `Commit - ${match.params.cid}`;
 
   return (
     h('div', {oncreate() { getCurrentCommitDiff() },

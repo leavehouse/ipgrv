@@ -12,9 +12,12 @@ import { escapeHtml, commitCloneHash } from "../utils"
 export const Blob = ({getBlob, blobState}) => ({ location, match }) => {
   const hashPath = location.hash.substring(2);
   const treePathArray = extractTreePathArray(hashPath, match.url)
+  const cidPath = { cid: match.params.cid, path: treePathArray };
+
   function getCurrentBlobPath() {
-    getBlob({ cid: match.params.cid, path: treePathArray });
+    getBlob(cidPath);
   }
+
   let highlighted;
   if (blobState.data) {
     const lang = getPrismLang(hashPath);
@@ -22,6 +25,9 @@ export const Blob = ({getBlob, blobState}) => ({ location, match }) => {
       highlighted = Prism.highlight(blobState.data, lang);
     }
   }
+
+  setTitle(cidPath);
+
   return (
     h('div', {oncreate() { getCurrentBlobPath() },
               onupdate() { getCurrentBlobPath() }}, [
@@ -36,12 +42,15 @@ export const Blob = ({getBlob, blobState}) => ({ location, match }) => {
 export const Filetree = ({getTreePath, treeState}) => ({ location, match }) => {
   const hashPath = location.hash.substring(2);
   const treePathArray = extractTreePathArray(hashPath, match.url)
+  const cidPath = { cid: match.params.cid, path: treePathArray };
 
   function getCurrentTreePath() {
-    getTreePath({ cid: match.params.cid, path: treePathArray });
+    getTreePath(cidPath);
   }
 
   const cloneHash = commitCloneHash(match.params.cid);
+
+  setTitle(cidPath);
 
   return (
     h('div', {oncreate() { getCurrentTreePath() },
@@ -55,6 +64,10 @@ export const Filetree = ({getTreePath, treeState}) => ({ location, match }) => {
       Readme({ readme: treeState.readme, isLoading: treeState.isLoading }),
     ])
   );
+}
+
+function setTitle({ cid, path}) {
+  document.title = `${path.length > 0 ? path.join('/') : '/'} at ${cid}`;
 }
 
 function pathToArray(path) {
